@@ -1,0 +1,158 @@
+{
+  "version": "1.0.0",
+  "phase": "S0",
+  "product": {
+    "name": "Fraction Lab v1",
+    "audience": "parents-and-students-b2c",
+    "surface": "responsive-web",
+    "accessModel": "guest-trial-optional-signup",
+    "language": "ko",
+    "sessionDurationMinutes": {
+      "min": 10,
+      "max": 15
+    }
+  },
+  "module": {
+    "id": "fraction-lab-grades-3-4-v1",
+    "gradeBand": "3-4",
+    "sessionFlow": [
+      "pre-diagnosis",
+      "manipulation",
+      "prediction",
+      "explanation",
+      "generalization",
+      "report"
+    ],
+    "lessons": [
+      {
+        "id": "L1",
+        "slug": "whole-and-part",
+        "title": "전체와 부분",
+        "goal": "분수를 전체를 같은 크기로 나눈 것 중 일부로 이해한다."
+      },
+      {
+        "id": "L2",
+        "slug": "denominator-and-numerator",
+        "title": "분모와 분자",
+        "goal": "분모는 같은 크기로 나눈 수, 분자는 선택한 부분 수로 해석한다."
+      },
+      {
+        "id": "L3",
+        "slug": "compare-fractions-same-whole",
+        "title": "같은 전체에서 크기 비교",
+        "goal": "전체가 같을 때만 분수의 크기를 비교한다."
+      },
+      {
+        "id": "L4",
+        "slug": "fractions-on-a-number-line",
+        "title": "수직선 위 분수",
+        "goal": "같은 간격으로 나눈 수직선 위에 분수를 표현한다."
+      }
+    ],
+    "outOfScope": [
+      "decimal-linkage",
+      "equivalent-fractions",
+      "simplifying-fractions",
+      "common-denominators",
+      "improper-fractions",
+      "mixed-numbers",
+      "teacher-dashboard",
+      "payments",
+      "admin-cms",
+      "realtime-ai-tutor-chat"
+    ]
+  },
+  "diagnostics": {
+    "misconceptions": [
+      {
+        "id": "M1",
+        "slug": "ignore-whole",
+        "title": "전체 무시"
+      },
+      {
+        "id": "M2",
+        "slug": "unequal-partition",
+        "title": "등분할 미이해"
+      },
+      {
+        "id": "M3",
+        "slug": "denominator-misread",
+        "title": "분모 오해"
+      },
+      {
+        "id": "M4",
+        "slug": "numerator-misread",
+        "title": "분자 오해"
+      },
+      {
+        "id": "M5",
+        "slug": "bigger-number-bias",
+        "title": "큰 수 편향"
+      },
+      {
+        "id": "M6",
+        "slug": "compare-different-wholes",
+        "title": "다른 전체 직접 비교"
+      },
+      {
+        "id": "M7",
+        "slug": "number-line-spacing",
+        "title": "수직선 간격 오해"
+      },
+      {
+        "id": "M8",
+        "slug": "symbol-meaning-disconnect",
+        "title": "기호-의미 분리"
+      }
+    ],
+    "signals": [
+      "correctness",
+      "attempt-count",
+      "time-to-first-submit",
+      "hint-usage-count",
+      "self-correction-after-retry",
+      "explanation-submitted"
+    ],
+    "aiPolicy": {
+      "coreJudgment": false,
+      "allowedUses": [
+        "explanation-support",
+        "parent-report-wording"
+      ]
+    }
+  },
+  "interaction": {
+    "activityKinds": [
+      "fraction-bars",
+      "number-line",
+      "multiple-choice",
+      "free-text"
+    ],
+    "semanticEvents": [
+      "select",
+      "drag-end",
+      "drop",
+      "submit",
+      "hint-open",
+      "retry",
+      "free-text-submit",
+      "complete"
+    ],
+    "contentSource": "repo-json-md",
+    "lessonExpansionPolicy": "lesson-spec-plus-rules-plus-existing-interactions"
+  },
+  "report": {
+    "type": "four-block-parent-report",
+    "blocks": [
+      "understood-concepts",
+      "misconceptions-to-watch",
+      "child-explanation-summary",
+      "recommended-next-activity"
+    ],
+    "minimumOutput": {
+      "minUnderstoodConcepts": 1,
+      "misconceptionFallback": "현재 뚜렷한 오개념 없음",
+      "recommendedNextActivities": 1
+    }
+  }
+}
