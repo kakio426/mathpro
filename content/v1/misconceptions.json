@@ -1,0 +1,142 @@
+[
+  {
+    "id": "M1",
+    "slug": "ignore-whole",
+    "title": "전체 무시",
+    "description": "전체가 달라져도 부분 수만 보고 분수를 해석한다.",
+    "allowedSignals": [
+      "correctness",
+      "attempt-count",
+      "hint-usage-count"
+    ],
+    "appliesToKinds": [
+      "fraction-bars",
+      "multiple-choice"
+    ],
+    "diagnosisTextTemplate": "전체를 기준으로 보지 않고 부분 수만 보고 판단하는 경향이 있습니다.",
+    "nextLessonSlug": "whole-and-part"
+  },
+  {
+    "id": "M2",
+    "slug": "unequal-partition",
+    "title": "등분할 미이해",
+    "description": "전체를 같은 크기로 나눠야 한다는 조건을 놓친다.",
+    "allowedSignals": [
+      "correctness",
+      "attempt-count",
+      "self-correction-after-retry"
+    ],
+    "appliesToKinds": [
+      "fraction-bars",
+      "multiple-choice"
+    ],
+    "diagnosisTextTemplate": "같은 크기로 나누는 조건을 아직 안정적으로 사용하지 못하고 있습니다.",
+    "nextLessonSlug": "whole-and-part"
+  },
+  {
+    "id": "M3",
+    "slug": "denominator-misread",
+    "title": "분모 오해",
+    "description": "분모를 선택한 부분 수처럼 해석한다.",
+    "allowedSignals": [
+      "correctness",
+      "attempt-count",
+      "explanation-submitted"
+    ],
+    "appliesToKinds": [
+      "fraction-bars",
+      "multiple-choice",
+      "free-text"
+    ],
+    "diagnosisTextTemplate": "분모를 전체를 나눈 수가 아니라 고른 조각 수처럼 해석하고 있습니다.",
+    "nextLessonSlug": "denominator-and-numerator"
+  },
+  {
+    "id": "M4",
+    "slug": "numerator-misread",
+    "title": "분자 오해",
+    "description": "분자를 전체를 나눈 수처럼 해석한다.",
+    "allowedSignals": [
+      "correctness",
+      "attempt-count",
+      "explanation-submitted"
+    ],
+    "appliesToKinds": [
+      "fraction-bars",
+      "multiple-choice",
+      "free-text"
+    ],
+    "diagnosisTextTemplate": "분자를 선택한 부분 수가 아니라 전체를 나눈 수처럼 읽는 경향이 있습니다.",
+    "nextLessonSlug": "denominator-and-numerator"
+  },
+  {
+    "id": "M5",
+    "slug": "bigger-number-bias",
+    "title": "큰 수 편향",
+    "description": "숫자가 크면 분수값도 크다고 본다.",
+    "allowedSignals": [
+      "correctness",
+      "attempt-count",
+      "hint-usage-count"
+    ],
+    "appliesToKinds": [
+      "fraction-bars",
+      "number-line",
+      "multiple-choice"
+    ],
+    "diagnosisTextTemplate": "분모나 분자 숫자가 크면 값도 크다고 판단하는 경향이 있습니다.",
+    "nextLessonSlug": "compare-fractions-same-whole"
+  },
+  {
+    "id": "M6",
+    "slug": "compare-different-wholes",
+    "title": "다른 전체 직접 비교",
+    "description": "전체가 다르지만 같은 기준인 것처럼 직접 비교한다.",
+    "allowedSignals": [
+      "correctness",
+      "attempt-count",
+      "self-correction-after-retry"
+    ],
+    "appliesToKinds": [
+      "fraction-bars",
+      "multiple-choice"
+    ],
+    "diagnosisTextTemplate": "전체가 같은지 먼저 확인하지 않고 분수를 바로 비교하고 있습니다.",
+    "nextLessonSlug": "compare-fractions-same-whole"
+  },
+  {
+    "id": "M7",
+    "slug": "number-line-spacing",
+    "title": "수직선 간격 오해",
+    "description": "수직선의 구간을 등간격으로 해석하지 못한다.",
+    "allowedSignals": [
+      "correctness",
+      "attempt-count",
+      "time-to-first-submit"
+    ],
+    "appliesToKinds": [
+      "number-line",
+      "multiple-choice"
+    ],
+    "diagnosisTextTemplate": "수직선의 칸을 같은 간격으로 보는 기준이 아직 불안정합니다.",
+    "nextLessonSlug": "fractions-on-a-number-line"
+  },
+  {
+    "id": "M8",
+    "slug": "symbol-meaning-disconnect",
+    "title": "기호-의미 분리",
+    "description": "분수 기호를 읽지만 조작 결과와 연결하지 못한다.",
+    "allowedSignals": [
+      "explanation-submitted",
+      "hint-usage-count",
+      "self-correction-after-retry"
+    ],
+    "appliesToKinds": [
+      "fraction-bars",
+      "number-line",
+      "free-text"
+    ],
+    "diagnosisTextTemplate": "분수 기호를 읽는 것과 실제 의미를 연결하는 데 추가 지원이 필요합니다.",
+    "nextLessonSlug": "whole-and-part"
+  }
+]

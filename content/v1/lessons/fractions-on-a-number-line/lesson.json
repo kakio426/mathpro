@@ -1,0 +1,139 @@
+{
+  "id": "L4",
+  "slug": "fractions-on-a-number-line",
+  "title": "수직선 위 분수",
+  "summary": "등간격 수직선 위에 분수를 위치로 표현한다.",
+  "goal": "분수를 수직선의 같은 간격 기준으로 위치에 연결한다.",
+  "gradeBand": "3-4",
+  "domain": "number-and-operations",
+  "conceptIds": [
+    "C4"
+  ],
+  "copy": {
+    "intro": "copy/intro.md",
+    "parentNote": "copy/parent-note.md"
+  },
+  "activities": [
+    {
+      "id": "L4-A1",
+      "stage": "pre-diagnosis",
+      "kind": "multiple-choice",
+      "prompt": "0과 1 사이를 4등분하면 2/4는 어디에 놓일까요?",
+      "copy": {
+        "hint": "copy/hint.md"
+      },
+      "misconceptionRuleIds": [
+        "M5",
+        "M7"
+      ],
+      "props": {
+        "options": [
+          {
+            "id": "A",
+            "text": "가운데 지점"
+          },
+          {
+            "id": "B",
+            "text": "1 바로 옆"
+          }
+        ],
+        "correctOptionId": "A"
+      }
+    },
+    {
+      "id": "L4-A2",
+      "stage": "manipulation",
+      "kind": "number-line",
+      "prompt": "0에서 1까지를 4등분한 수직선에서 3/4 위치를 찾아보세요.",
+      "copy": {
+        "hint": "copy/hint.md"
+      },
+      "misconceptionRuleIds": [
+        "M7",
+        "M8"
+      ],
+      "props": {
+        "min": 0,
+        "max": 1,
+        "partitionCount": 4,
+        "targetNumerator": 3,
+        "targetDenominator": 4,
+        "showLabels": true
+      }
+    },
+    {
+      "id": "L4-A3",
+      "stage": "prediction",
+      "kind": "multiple-choice",
+      "prompt": "0과 1 사이를 5등분했다면 1/5는 어디에 가장 가까울까요?",
+      "copy": {
+        "hint": "copy/hint.md"
+      },
+      "misconceptionRuleIds": [
+        "M5",
+        "M7"
+      ],
+      "props": {
+        "options": [
+          {
+            "id": "A",
+            "text": "0 바로 다음 칸"
+          },
+          {
+            "id": "B",
+            "text": "1 바로 전 칸"
+          }
+        ],
+        "correctOptionId": "A"
+      }
+    },
+    {
+      "id": "L4-A4",
+      "stage": "explanation",
+      "kind": "free-text",
+      "prompt": "수직선에서 3/4를 어떻게 찾았는지 설명해 보세요.",
+      "copy": {
+        "hint": "copy/hint.md"
+      },
+      "misconceptionRuleIds": [
+        "M7",
+        "M8"
+      ],
+      "props": {
+        "placeholder": "0부터 1까지를 ... 처럼 적어 보세요.",
+        "minLength": 10,
+        "maxLength": 140,
+        "rubricKeywords": [
+          "0과 1",
+          "4등분",
+          "세 번째 칸"
+        ]
+      }
+    },
+    {
+      "id": "L4-A5",
+      "stage": "generalization",
+      "kind": "multiple-choice",
+      "prompt": "수직선에서 분수를 찾을 때 먼저 해야 할 일은 무엇일까요?",
+      "copy": {
+        "hint": "copy/hint.md"
+      },
+      "misconceptionRuleIds": [
+        "M7"
+      ],
+      "props": {
+        "options": [
+          {
+            "id": "A",
+            "text": "기준 구간을 같은 간격으로 나눈다."
+          },
+          {
+            "id": "B",
+            "text": "숫자가 큰 쪽 끝으로 점프한다."
+          }
+        ],
+        "correctOptionId": "A"
+      }
+    }
+  ]
+}

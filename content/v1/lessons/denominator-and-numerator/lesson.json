@@ -1,0 +1,149 @@
+{
+  "id": "L2",
+  "slug": "denominator-and-numerator",
+  "title": "분모와 분자",
+  "summary": "분모는 나눈 수, 분자는 선택한 부분 수로 해석한다.",
+  "goal": "분모와 분자의 역할을 조작과 언어로 설명한다.",
+  "gradeBand": "3-4",
+  "domain": "number-and-operations",
+  "conceptIds": [
+    "C2"
+  ],
+  "copy": {
+    "intro": "copy/intro.md",
+    "parentNote": "copy/parent-note.md"
+  },
+  "activities": [
+    {
+      "id": "L2-A1",
+      "stage": "pre-diagnosis",
+      "kind": "multiple-choice",
+      "prompt": "3/5에서 5는 무엇을 뜻할까요?",
+      "copy": {
+        "hint": "copy/hint.md"
+      },
+      "misconceptionRuleIds": [
+        "M3",
+        "M4"
+      ],
+      "props": {
+        "options": [
+          {
+            "id": "A",
+            "text": "전체를 같은 크기로 나눈 수"
+          },
+          {
+            "id": "B",
+            "text": "선택한 조각 수"
+          }
+        ],
+        "correctOptionId": "A"
+      }
+    },
+    {
+      "id": "L2-A2",
+      "stage": "manipulation",
+      "kind": "fraction-bars",
+      "prompt": "막대를 5등분하고 3칸을 골라 3/5를 표현해 보세요.",
+      "copy": {
+        "hint": "copy/hint.md"
+      },
+      "misconceptionRuleIds": [
+        "M3",
+        "M4",
+        "M8"
+      ],
+      "props": {
+        "wholeLabel": "주스 1병",
+        "partitionCount": 5,
+        "selectableParts": 5,
+        "correctParts": [
+          0,
+          1,
+          2
+        ]
+      }
+    },
+    {
+      "id": "L2-A3",
+      "stage": "prediction",
+      "kind": "multiple-choice",
+      "prompt": "7등분한 것 중 2조각을 골랐다면 어떤 분수일까요?",
+      "copy": {
+        "hint": "copy/hint.md"
+      },
+      "misconceptionRuleIds": [
+        "M3",
+        "M4"
+      ],
+      "props": {
+        "options": [
+          {
+            "id": "A",
+            "text": "2/7"
+          },
+          {
+            "id": "B",
+            "text": "7/2"
+          },
+          {
+            "id": "C",
+            "text": "7/7"
+          }
+        ],
+        "correctOptionId": "A"
+      }
+    },
+    {
+      "id": "L2-A4",
+      "stage": "explanation",
+      "kind": "free-text",
+      "prompt": "분모와 분자가 각각 무엇을 뜻하는지 써 보세요.",
+      "copy": {
+        "hint": "copy/hint.md"
+      },
+      "misconceptionRuleIds": [
+        "M3",
+        "M4",
+        "M8"
+      ],
+      "props": {
+        "placeholder": "분모는..., 분자는... 형태로 적어 보세요.",
+        "minLength": 10,
+        "maxLength": 140,
+        "rubricKeywords": [
+          "분모",
+          "분자",
+          "나눈 수",
+          "고른 수"
+        ]
+      }
+    },
+    {
+      "id": "L2-A5",
+      "stage": "generalization",
+      "kind": "multiple-choice",
+      "prompt": "8등분 중 5조각을 고른 상황에 알맞은 식을 고르세요.",
+      "copy": {
+        "hint": "copy/hint.md"
+      },
+      "misconceptionRuleIds": [
+        "M3",
+        "M4"
+      ],
+      "props": {
+        "options": [
+          {
+            "id": "A",
+            "text": "5/8"
+          },
+          {
+            "id": "B",
+            "text": "8/5"
+          }
+        ],
+        "correctOptionId": "A"
+      }
+    }
+  ]
+}

@@ -1,0 +1,44 @@
+[
+  {
+    "id": "M1",
+    "slug": "ignore-whole",
+    "title": "전체 무시",
+    "description": "전체를 보지 않고 조각 수만 본다.",
+    "allowedSignals": [
+      "correctness"
+    ],
+    "appliesToKinds": [
+      "fraction-bars",
+      "multiple-choice"
+    ],
+    "diagnosisTextTemplate": "전체보다 조각 수만 기준으로 판단하고 있습니다."
+  },
+  {
+    "id": "M2",
+    "slug": "unequal-partition",
+    "title": "등분할 미이해",
+    "description": "같은 크기로 나눠야 한다는 조건을 놓친다.",
+    "allowedSignals": [
+      "correctness"
+    ],
+    "appliesToKinds": [
+      "fraction-bars",
+      "multiple-choice"
+    ],
+    "diagnosisTextTemplate": "같은 크기 조각이라는 기준이 필요합니다."
+  },
+  {
+    "id": "M8",
+    "slug": "symbol-meaning-disconnect",
+    "title": "기호-의미 분리",
+    "description": "분수 기호와 조작 결과를 연결하지 못한다.",
+    "allowedSignals": [
+      "explanation-submitted"
+    ],
+    "appliesToKinds": [
+      "fraction-bars",
+      "free-text"
+    ],
+    "diagnosisTextTemplate": "기호와 실제 의미를 연결하는 연습이 더 필요합니다."
+  }
+]

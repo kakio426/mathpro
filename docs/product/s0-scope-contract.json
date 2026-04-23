@@ -2,7 +2,7 @@
   "version": "1.0.0",
   "phase": "S0",
   "product": {
-    "name": "Fraction Lab v1",
+    "name": "수학프로",
     "audience": "parents-and-students-b2c",
     "surface": "responsive-web",
     "accessModel": "guest-trial-optional-signup",
@@ -14,6 +14,7 @@
   },
   "module": {
     "id": "fraction-lab-grades-3-4-v1",
+    "name": "분수 탐험실",
     "gradeBand": "3-4",
     "sessionFlow": [
       "pre-diagnosis",

@@ -1,0 +1,147 @@
+{
+  "id": "L1",
+  "slug": "whole-and-part",
+  "title": "전체와 부분",
+  "summary": "분수를 전체를 같은 크기로 나눈 것 중 일부로 이해한다.",
+  "goal": "전체와 부분의 관계를 같은 크기 조각으로 설명한다.",
+  "gradeBand": "3-4",
+  "domain": "number-and-operations",
+  "conceptIds": [
+    "C1"
+  ],
+  "copy": {
+    "intro": "copy/intro.md",
+    "parentNote": "copy/parent-note.md"
+  },
+  "activities": [
+    {
+      "id": "L1-A1",
+      "stage": "pre-diagnosis",
+      "kind": "multiple-choice",
+      "prompt": "분수가 되려면 어떤 설명이 먼저 맞아야 할까요?",
+      "copy": {
+        "hint": "copy/hint.md"
+      },
+      "misconceptionRuleIds": [
+        "M1",
+        "M2"
+      ],
+      "props": {
+        "options": [
+          {
+            "id": "A",
+            "text": "전체를 같은 크기로 나누고 일부를 고른다."
+          },
+          {
+            "id": "B",
+            "text": "조각 수가 많아 보이면 더 큰 분수다."
+          }
+        ],
+        "correctOptionId": "A"
+      }
+    },
+    {
+      "id": "L1-A2",
+      "stage": "manipulation",
+      "kind": "fraction-bars",
+      "prompt": "막대를 4등분한 뒤 2칸을 선택해 2/4를 만들어 보세요.",
+      "copy": {
+        "hint": "copy/hint.md"
+      },
+      "misconceptionRuleIds": [
+        "M1",
+        "M2",
+        "M8"
+      ],
+      "props": {
+        "wholeLabel": "초코바 1개",
+        "partitionCount": 4,
+        "selectableParts": 4,
+        "correctParts": [
+          0,
+          1
+        ],
+        "allowUnequalPreview": true
+      }
+    },
+    {
+      "id": "L1-A3",
+      "stage": "prediction",
+      "kind": "multiple-choice",
+      "prompt": "같은 초코바를 4등분해서 2조각을 고르면 어떤 분수일까요?",
+      "copy": {
+        "hint": "copy/hint.md"
+      },
+      "misconceptionRuleIds": [
+        "M1",
+        "M2"
+      ],
+      "props": {
+        "options": [
+          {
+            "id": "A",
+            "text": "2/4"
+          },
+          {
+            "id": "B",
+            "text": "4/2"
+          },
+          {
+            "id": "C",
+            "text": "4/4"
+          }
+        ],
+        "correctOptionId": "A"
+      }
+    },
+    {
+      "id": "L1-A4",
+      "stage": "explanation",
+      "kind": "free-text",
+      "prompt": "왜 2/4라고 생각했는지 한 문장으로 설명해 보세요.",
+      "copy": {
+        "hint": "copy/hint.md"
+      },
+      "misconceptionRuleIds": [
+        "M8"
+      ],
+      "props": {
+        "placeholder": "전체를 어떻게 나눴고 몇 조각을 골랐는지 적어 보세요.",
+        "minLength": 8,
+        "maxLength": 120,
+        "rubricKeywords": [
+          "전체",
+          "같은 크기",
+          "2조각",
+          "4조각"
+        ]
+      }
+    },
+    {
+      "id": "L1-A5",
+      "stage": "generalization",
+      "kind": "multiple-choice",
+      "prompt": "어떤 상황이 분수로 말하기에 알맞을까요?",
+      "copy": {
+        "hint": "copy/hint.md"
+      },
+      "misconceptionRuleIds": [
+        "M1",
+        "M2"
+      ],
+      "props": {
+        "options": [
+          {
+            "id": "A",
+            "text": "같은 크기로 나눈 전체 중 일부를 고른 상황"
+          },
+          {
+            "id": "B",
+            "text": "크기가 다른 조각을 대충 모아 둔 상황"
+          }
+        ],
+        "correctOptionId": "A"
+      }
+    }
+  ]
+}

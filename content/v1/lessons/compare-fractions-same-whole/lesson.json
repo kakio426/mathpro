@@ -1,0 +1,142 @@
+{
+  "id": "L3",
+  "slug": "compare-fractions-same-whole",
+  "title": "같은 전체에서 크기 비교",
+  "summary": "전체가 같을 때만 분수의 크기를 비교한다.",
+  "goal": "같은 전체를 기준으로 분수의 크기를 비교한다.",
+  "gradeBand": "3-4",
+  "domain": "number-and-operations",
+  "conceptIds": [
+    "C3"
+  ],
+  "copy": {
+    "intro": "copy/intro.md",
+    "parentNote": "copy/parent-note.md"
+  },
+  "activities": [
+    {
+      "id": "L3-A1",
+      "stage": "pre-diagnosis",
+      "kind": "multiple-choice",
+      "prompt": "같은 케이크를 1/2와 1/4로 나눌 때 더 큰 조각은 어느 쪽일까요?",
+      "copy": {
+        "hint": "copy/hint.md"
+      },
+      "misconceptionRuleIds": [
+        "M5",
+        "M6"
+      ],
+      "props": {
+        "options": [
+          {
+            "id": "A",
+            "text": "1/2"
+          },
+          {
+            "id": "B",
+            "text": "1/4"
+          }
+        ],
+        "correctOptionId": "A"
+      }
+    },
+    {
+      "id": "L3-A2",
+      "stage": "manipulation",
+      "kind": "fraction-bars",
+      "prompt": "같은 길이의 막대에서 1/2와 1/4를 번갈아 만들어 보세요.",
+      "copy": {
+        "hint": "copy/hint.md"
+      },
+      "misconceptionRuleIds": [
+        "M5",
+        "M6",
+        "M8"
+      ],
+      "props": {
+        "wholeLabel": "같은 길이 막대",
+        "partitionCount": 4,
+        "selectableParts": 4,
+        "correctParts": [
+          0,
+          1
+        ]
+      }
+    },
+    {
+      "id": "L3-A3",
+      "stage": "prediction",
+      "kind": "multiple-choice",
+      "prompt": "전체가 같다면 3/4와 2/4 중 더 큰 것은 무엇일까요?",
+      "copy": {
+        "hint": "copy/hint.md"
+      },
+      "misconceptionRuleIds": [
+        "M5",
+        "M6"
+      ],
+      "props": {
+        "options": [
+          {
+            "id": "A",
+            "text": "3/4"
+          },
+          {
+            "id": "B",
+            "text": "2/4"
+          }
+        ],
+        "correctOptionId": "A"
+      }
+    },
+    {
+      "id": "L3-A4",
+      "stage": "explanation",
+      "kind": "free-text",
+      "prompt": "왜 같은 전체를 먼저 봐야 하는지 설명해 보세요.",
+      "copy": {
+        "hint": "copy/hint.md"
+      },
+      "misconceptionRuleIds": [
+        "M6",
+        "M8"
+      ],
+      "props": {
+        "placeholder": "전체가 같아야 ... 처럼 시작해 보세요.",
+        "minLength": 10,
+        "maxLength": 140,
+        "rubricKeywords": [
+          "같은 전체",
+          "비교",
+          "기준"
+        ]
+      }
+    },
+    {
+      "id": "L3-A5",
+      "stage": "generalization",
+      "kind": "multiple-choice",
+      "prompt": "전체가 다르면 무엇을 먼저 확인해야 할까요?",
+      "copy": {
+        "hint": "copy/hint.md"
+      },
+      "misconceptionRuleIds": [
+        "M5",
+        "M6"
+      ],
+      "props": {
+        "options": [
+          {
+            "id": "A",
+            "text": "전체가 같은지 확인한다."
+          },
+          {
+            "id": "B",
+            "text": "숫자가 큰 분수를 고른다."
+          }
+        ],
+        "correctOptionId": "A"
+      }
+    }
+  ]
+}

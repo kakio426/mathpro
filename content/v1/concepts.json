@@ -1,0 +1,42 @@
+[
+  {
+    "id": "C1",
+    "title": "전체와 같은 크기 부분",
+    "gradeBand": "3-4",
+    "domain": "number-and-operations",
+    "summary": "분수를 전체를 같은 크기로 나눈 것 중 일부로 이해한다.",
+    "prerequisiteIds": []
+  },
+  {
+    "id": "C2",
+    "title": "분모와 분자의 역할",
+    "gradeBand": "3-4",
+    "domain": "number-and-operations",
+    "summary": "분모는 나눈 수, 분자는 선택한 부분 수로 해석한다.",
+    "prerequisiteIds": [
+      "C1"
+    ]
+  },
+  {
+    "id": "C3",
+    "title": "같은 전체에서 분수 비교",
+    "gradeBand": "3-4",
+    "domain": "number-and-operations",
+    "summary": "전체가 같을 때만 분수의 크기를 비교한다.",
+    "prerequisiteIds": [
+      "C1",
+      "C2"
+    ]
+  },
+  {
+    "id": "C4",
+    "title": "수직선 위 분수 표현",
+    "gradeBand": "3-4",
+    "domain": "number-and-operations",
+    "summary": "등간격 수직선 위에 분수를 위치로 표현한다.",
+    "prerequisiteIds": [
+      "C1",
+      "C2"
+    ]
+  }
+]

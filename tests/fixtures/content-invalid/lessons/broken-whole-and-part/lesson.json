@@ -1,0 +1,37 @@
+{
+  "id": "L1",
+  "slug": "broken-whole-and-part",
+  "title": "깨진 lesson",
+  "summary": "의도적으로 잘못된 fixture",
+  "goal": "validation 에러를 확인한다.",
+  "gradeBand": "3-4",
+  "domain": "number-and-operations",
+  "conceptIds": [
+    "C1"
+  ],
+  "copy": {
+    "intro": "copy/intro.md"
+  },
+  "activities": [
+    {
+      "id": "L1-A1",
+      "stage": "manipulation",
+      "kind": "fraction-bars",
+      "prompt": "깨진 fraction-bars props",
+      "copy": {
+        "hint": "copy/hint.md"
+      },
+      "misconceptionRuleIds": [
+        "M1"
+      ],
+      "props": {
+        "wholeLabel": "막대 1개",
+        "selectableParts": 4,
+        "correctParts": [
+          0,
+          1
+        ]
+      }
+    }
+  ]
+}

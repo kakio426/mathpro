@@ -1,11 +1,11 @@
-# S0 Scope Freeze: Fraction Lab v1
+# S0 Scope Freeze: 수학프로 v1
 
 ## Summary
-- Product: `Fraction Lab v1`
+- Product: `수학프로`
 - Audience: `Parents and students (B2C)`
 - Surface: `Responsive web`
 - Access model: `Guest trial + optional signup`
-- First module: `Grades 3-4 fraction exploration`
+- First module: `수학프로 | 분수 탐험실`
 - Goal session length: `10-15 minutes`
 - Core outputs:
   - One structured interactive learning session

@@ -1,0 +1,141 @@
+{
+  "id": "L1",
+  "slug": "whole-and-part",
+  "title": "전체와 부분",
+  "summary": "분수를 전체를 같은 크기로 나눈 것 중 일부로 이해한다.",
+  "goal": "전체와 부분의 관계를 같은 크기 조각으로 설명한다.",
+  "gradeBand": "3-4",
+  "domain": "number-and-operations",
+  "conceptIds": [
+    "C1"
+  ],
+  "copy": {
+    "intro": "copy/intro.md",
+    "parentNote": "copy/parent-note.md"
+  },
+  "activities": [
+    {
+      "id": "L1-A1",
+      "stage": "pre-diagnosis",
+      "kind": "multiple-choice",
+      "prompt": "분수의 조건을 고르세요.",
+      "copy": {
+        "hint": "copy/hint.md"
+      },
+      "misconceptionRuleIds": [
+        "M1",
+        "M2"
+      ],
+      "props": {
+        "options": [
+          {
+            "id": "A",
+            "text": "같은 크기로 나눈다."
+          },
+          {
+            "id": "B",
+            "text": "대충 나눈다."
+          }
+        ],
+        "correctOptionId": "A"
+      }
+    },
+    {
+      "id": "L1-A2",
+      "stage": "manipulation",
+      "kind": "fraction-bars",
+      "prompt": "4등분 중 2칸을 고르세요.",
+      "copy": {
+        "hint": "copy/hint.md"
+      },
+      "misconceptionRuleIds": [
+        "M1",
+        "M2",
+        "M8"
+      ],
+      "props": {
+        "wholeLabel": "막대 1개",
+        "partitionCount": 4,
+        "selectableParts": 4,
+        "correctParts": [
+          0,
+          1
+        ]
+      }
+    },
+    {
+      "id": "L1-A3",
+      "stage": "prediction",
+      "kind": "multiple-choice",
+      "prompt": "2조각을 고르면 어떤 분수일까요?",
+      "copy": {
+        "hint": "copy/hint.md"
+      },
+      "misconceptionRuleIds": [
+        "M1",
+        "M2"
+      ],
+      "props": {
+        "options": [
+          {
+            "id": "A",
+            "text": "2/4"
+          },
+          {
+            "id": "B",
+            "text": "4/2"
+          }
+        ],
+        "correctOptionId": "A"
+      }
+    },
+    {
+      "id": "L1-A4",
+      "stage": "explanation",
+      "kind": "free-text",
+      "prompt": "왜 2/4인지 설명해 보세요.",
+      "copy": {
+        "hint": "copy/hint.md"
+      },
+      "misconceptionRuleIds": [
+        "M8"
+      ],
+      "props": {
+        "placeholder": "전체와 조각 수를 함께 말해 보세요.",
+        "minLength": 8,
+        "maxLength": 120,
+        "rubricKeywords": [
+          "전체",
+          "4등분",
+          "2조각"
+        ]
+      }
+    },
+    {
+      "id": "L1-A5",
+      "stage": "generalization",
+      "kind": "multiple-choice",
+      "prompt": "분수로 말할 수 있는 상황을 고르세요.",
+      "copy": {
+        "hint": "copy/hint.md"
+      },
+      "misconceptionRuleIds": [
+        "M1",
+        "M2"
+      ],
+      "props": {
+        "options": [
+          {
+            "id": "A",
+            "text": "같은 크기로 나눈 전체 중 일부"
+          },
+          {
+            "id": "B",
+            "text": "크기가 다른 조각 모음"
+          }
+        ],
+        "correctOptionId": "A"
+      }
+    }
+  ]
+}

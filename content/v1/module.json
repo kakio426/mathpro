@@ -1,0 +1,21 @@
+{
+  "id": "fraction-lab-grades-3-4-v1",
+  "version": "1.0.0",
+  "title": "수학프로 | 분수 탐험실 v1",
+  "gradeBand": "3-4",
+  "domain": "number-and-operations",
+  "sessionFlow": [
+    "pre-diagnosis",
+    "manipulation",
+    "prediction",
+    "explanation",
+    "generalization",
+    "report"
+  ],
+  "lessonOrder": [
+    "whole-and-part",
+    "denominator-and-numerator",
+    "compare-fractions-same-whole",
+    "fractions-on-a-number-line"
+  ]
+}

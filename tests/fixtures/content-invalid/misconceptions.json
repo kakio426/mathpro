@@ -1,0 +1,15 @@
+[
+  {
+    "id": "M1",
+    "slug": "ignore-whole",
+    "title": "전체 무시",
+    "description": "전체를 보지 않고 조각 수만 본다.",
+    "allowedSignals": [
+      "correctness"
+    ],
+    "appliesToKinds": [
+      "fraction-bars"
+    ],
+    "diagnosisTextTemplate": "전체보다 조각 수만 기준으로 판단하고 있습니다."
+  }
+]
