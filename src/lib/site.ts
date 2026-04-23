@@ -4,7 +4,7 @@ export const siteConfig = {
   description:
     "수학프로는 2022 개정 초등 수학의 개념을 조작, 예측, 설명, 일반화의 흐름으로 탐구하는 인터랙션 학습 플랫폼입니다.",
   tagline: "2022 개정 초등 수학을 위한 인터랙션 학습 서비스",
-  shellStage: "S1 프로젝트 골격",
+  shellStage: "S4 세션 러너",
   lessons: [
     {
       id: "L1",

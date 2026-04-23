@@ -1,5 +1,6 @@
-import { RouteShell } from "@/components/placeholder/route-shell";
-import { siteConfig } from "@/lib/site";
+import { SessionReportStatus } from "@/components/report/session-report-status";
+import { Container } from "@/components/layout/container";
+import { Badge } from "@/components/ui/badge";
 
 type ReportPageProps = {
   params: Promise<{ sessionId: string }>;
@@ -9,18 +10,22 @@ export default async function ReportPage({ params }: ReportPageProps) {
   const { sessionId } = await params;
 
   return (
-    <RouteShell
-      eyebrow="수학프로 리포트 셸"
-      title="수학프로 학습 리포트"
-      description="이 화면은 수학프로의 S5 진단 엔진과 P4 문장화 계층이 들어갈 자리입니다. 지금은 4블록 결과 구조와 동적 session route만 유지합니다."
-      routeValue={`/report/${sessionId}`}
-      highlights={siteConfig.reportBlocks}
-      footer={
-        <>
-          현재는 세션 저장이나 진단 데이터가 없으므로 placeholder만 노출합니다. 이후
-          게스트 세션이 생기면 이 route가 실제 수학프로 결과 조회 페이지가 됩니다.
-        </>
-      }
-    />
+    <section className="py-[var(--space-section)]">
+      <Container className="space-y-6">
+        <div className="space-y-4">
+          <Badge variant="accent">수학프로 리포트</Badge>
+          <div className="space-y-3">
+            <h1 className="text-balance text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
+              수학프로 학습 리포트
+            </h1>
+            <p className="max-w-2xl text-base leading-7 text-muted">
+              방금 끝낸 학습 세션의 저장 상태와 리포트 준비 상황을 보여줍니다.
+            </p>
+          </div>
+        </div>
+
+        <SessionReportStatus sessionId={sessionId} />
+      </Container>
+    </section>
   );
 }

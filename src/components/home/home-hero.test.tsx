@@ -16,7 +16,7 @@ vi.mock("next/link", () => ({
 }));
 
 describe("HomeHero", () => {
-  it("renders the S1 skeleton copy and entry links", () => {
+  it("renders the current learning entry links", () => {
     render(<HomeHero />);
 
     expect(
@@ -24,11 +24,11 @@ describe("HomeHero", () => {
         name: new RegExp(`분수 개념을 문제풀이가 아니라 사고의 흐름으로 설계하는 ${siteConfig.name}`),
       }),
     ).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /학습 셸 보기/ })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: /학습 시작/ })).toHaveAttribute(
       "href",
       "/lab/whole-and-part",
     );
-    expect(screen.getByRole("link", { name: /리포트 셸 보기/ })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: /리포트 상태 보기/ })).toHaveAttribute(
       "href",
       "/report/demo-session",
     );

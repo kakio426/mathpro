@@ -24,19 +24,19 @@ export function HomeHero() {
               분수 개념을 문제풀이가 아니라 사고의 흐름으로 설계하는 {siteConfig.name}
             </h1>
             <p className="max-w-2xl text-lg leading-8 text-muted">
-              {siteConfig.description} 지금 단계는 S1 골격이라서 실제 학습 로직 대신,
-              이후 S2 타입 계약과 S4 세션 러너가 올라갈 빈 구조를 먼저 준비합니다.
+              {siteConfig.description} 현재는 4개 lesson의 실제 학습 세션과 리포트
+              상태 조회까지 연결되어 있고, 진단 내용은 S5에서 더 정교하게 채워집니다.
             </p>
           </div>
           <div className="flex flex-col gap-3 sm:flex-row">
             <Button asChild size="lg">
               <Link href="/lab/whole-and-part">
-                학습 셸 보기
+                학습 시작
                 <ArrowRight className="size-4" />
               </Link>
             </Button>
             <Button asChild size="lg" variant="secondary">
-              <Link href="/report/demo-session">리포트 셸 보기</Link>
+              <Link href="/report/demo-session">리포트 상태 보기</Link>
             </Button>
           </div>
         </div>
@@ -46,7 +46,7 @@ export function HomeHero() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Layers3 className="size-5 text-primary" />
-                학습 세션 골격
+                학습 세션 흐름
               </CardTitle>
               <CardDescription>
                 모든 lesson은 사전진단부터 결과 리포트까지 같은 흐름을 유지합니다.
@@ -100,16 +100,16 @@ export function HomeHero() {
         </div>
 
         <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <ChartNoAxesColumn className="size-5 text-primary" />
-              보호자 리포트 4블록 계약
-            </CardTitle>
-            <CardDescription>
-              점수 대신 개념 이해와 오개념 문장을 중심으로 보여주는 결과 화면 골격입니다.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-5">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <ChartNoAxesColumn className="size-5 text-primary" />
+                보호자 리포트 4블록
+              </CardTitle>
+              <CardDescription>
+                완료 후에는 저장 상태와 함께 이 4개 블록을 기준으로 결과를 보여줍니다.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-5">
             <div data-shell-grid="two">
               {siteConfig.reportBlocks.map((block) => (
                 <div
@@ -118,15 +118,16 @@ export function HomeHero() {
                 >
                   <p className="text-sm font-semibold text-foreground">{block}</p>
                   <p className="mt-2 text-sm leading-6 text-muted">
-                    이후 S5와 P4에서 실제 진단 데이터와 문장형 요약이 연결됩니다.
+                    현재는 저장 상태와 기본 안내를 보여주고, S5와 P4에서 실제 진단
+                    요약이 채워집니다.
                   </p>
                 </div>
               ))}
             </div>
             <Separator />
             <p className="text-sm leading-6 text-muted">
-              이 홈 화면은 제품 소개와 진입 CTA만 담당합니다. 세션 로직, 콘텐츠
-              스키마, API 라우트는 아직 연결하지 않습니다.
+              이 홈 화면은 제품 소개와 시작 경로를 안내합니다. 실제 lesson 세션은
+              `/lab`, 리포트 상태 조회는 `/report`에서 동작합니다.
             </p>
           </CardContent>
         </Card>

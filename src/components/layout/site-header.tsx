@@ -16,10 +16,10 @@ export function SiteHeader() {
         </div>
         <nav className="flex items-center gap-2">
           <Button asChild size="sm" variant="ghost">
-            <Link href="/lab/whole-and-part">학습 셸</Link>
+            <Link href="/lab/whole-and-part">학습 시작</Link>
           </Button>
           <Button asChild size="sm" variant="secondary">
-            <Link href="/report/demo-session">리포트 셸</Link>
+            <Link href="/report/demo-session">리포트 상태 보기</Link>
           </Button>
         </nav>
       </Container>
