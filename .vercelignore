@@ -1,0 +1,7 @@
+# Keep local environment files out of uploaded deployment sources.
+.env*
+
+# Local build and test artifacts
+.next
+coverage
+test-results
