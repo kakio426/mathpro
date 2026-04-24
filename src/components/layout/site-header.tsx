@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Route } from "next";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Container } from "@/components/layout/container";
@@ -16,10 +17,10 @@ export function SiteHeader() {
         </div>
         <nav className="flex items-center gap-2">
           <Button asChild size="sm" variant="ghost">
-            <Link href="/lab/whole-and-part">학습 시작</Link>
+            <Link href="/">자료 만들기</Link>
           </Button>
           <Button asChild size="sm" variant="secondary">
-            <Link href="/report/demo-session">리포트 상태 보기</Link>
+            <Link href={"/join" as Route}>참여 코드</Link>
           </Button>
         </nav>
       </Container>

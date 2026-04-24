@@ -1,6 +1,7 @@
 "use client";
 
 import { startTransition, useState } from "react";
+import type { Route } from "next";
 import { useRouter } from "next/navigation";
 import { Container } from "@/components/layout/container";
 import { ActivityRenderer } from "@/components/lesson-runner/activity-renderers/activity-renderer";
@@ -42,9 +43,14 @@ function formatStageLabel(stage: string) {
   }
 }
 
-export function LessonRunner({ lesson, moduleTitle }: LessonRunnerProps) {
+export function LessonRunner({
+  lesson,
+  moduleTitle,
+  sessionStart,
+  completionRedirectBasePath = "/report",
+}: LessonRunnerProps) {
   const router = useRouter();
-  const session = useLessonSession(lesson.slug);
+  const session = useLessonSession(lesson.slug, sessionStart);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [attempt, setAttempt] = useState(1);
   const [feedbackState, setFeedbackState] = useState<ActivityFeedbackState>({
@@ -167,7 +173,9 @@ export function LessonRunner({ lesson, moduleTitle }: LessonRunnerProps) {
       });
 
       startTransition(() => {
-        router.push(`/report/${completed.sessionId}`);
+        router.push(
+          `${completionRedirectBasePath}/${completed.sessionId}` as Route,
+        );
       });
     } catch (error) {
       setCompleteError(

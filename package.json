@@ -11,7 +11,8 @@
     "typecheck": "tsc --noEmit",
     "test": "npm run test:unit && npm run test:e2e",
     "test:unit": "vitest run",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "release:check": "npm run lint && npm run typecheck && npm run content:check && npm run test:unit && npm run test:e2e && npm run build"
   },
   "dependencies": {
     "@radix-ui/react-separator": "^1.1.8",

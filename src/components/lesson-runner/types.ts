@@ -35,6 +35,12 @@ export type ActivityFeedbackState = {
 export type LessonRunnerProps = {
   lesson: LoadedLessonSpec;
   moduleTitle: string;
+  sessionStart?: {
+    key: string;
+    endpoint: string;
+    body: Record<string, string>;
+  };
+  completionRedirectBasePath?: string;
 };
 
 export type LessonRunnerState = {

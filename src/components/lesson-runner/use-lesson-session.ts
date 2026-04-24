@@ -14,6 +14,12 @@ import {
 
 const pendingSessionStarts = new Map<string, Promise<StartSessionResponse>>();
 
+export type LessonSessionStartConfig = {
+  key: string;
+  endpoint: string;
+  body: Record<string, string>;
+};
+
 type ApiErrorResponse = {
   error?: {
     code?: string;
@@ -38,16 +44,14 @@ async function parseApiResponse<T>(
 }
 
 async function startLessonSession(
-  lessonSlug: string,
+  startConfig: LessonSessionStartConfig,
 ): Promise<StartSessionResponse> {
-  const response = await fetch("/api/sessions", {
+  const response = await fetch(startConfig.endpoint, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({
-      lessonSlug,
-    }),
+    body: JSON.stringify(startConfig.body),
   });
 
   return parseApiResponse(
@@ -57,22 +61,22 @@ async function startLessonSession(
   );
 }
 
-function getOrStartLessonSession(lessonSlug: string) {
-  const existing = pendingSessionStarts.get(lessonSlug);
+function getOrStartLessonSession(startConfig: LessonSessionStartConfig) {
+  const existing = pendingSessionStarts.get(startConfig.key);
 
   if (existing) {
     return existing;
   }
 
-  const request = startLessonSession(lessonSlug).finally(() => {
-    const current = pendingSessionStarts.get(lessonSlug);
+  const request = startLessonSession(startConfig).finally(() => {
+    const current = pendingSessionStarts.get(startConfig.key);
 
     if (current === request) {
-      pendingSessionStarts.delete(lessonSlug);
+      pendingSessionStarts.delete(startConfig.key);
     }
   });
 
-  pendingSessionStarts.set(lessonSlug, request);
+  pendingSessionStarts.set(startConfig.key, request);
 
   return request;
 }
@@ -120,7 +124,13 @@ async function completeTrackedSession(
   );
 }
 
-export function useLessonSession(lessonSlug: string) {
+export function useLessonSession(
+  lessonSlug: string,
+  startConfig?: LessonSessionStartConfig,
+) {
+  const startKey = startConfig?.key ?? `lesson:${lessonSlug}`;
+  const startEndpoint = startConfig?.endpoint ?? "/api/sessions";
+  const startBodyKey = JSON.stringify(startConfig?.body ?? { lessonSlug });
   const [sessionStatus, setSessionStatus] = useState<
     "starting" | "ready" | "start-error"
   >("starting");
@@ -137,7 +147,11 @@ export function useLessonSession(lessonSlug: string) {
         setFatalError(null);
         setSessionId(null);
 
-        const response = await getOrStartLessonSession(lessonSlug);
+        const response = await getOrStartLessonSession({
+          key: startKey,
+          endpoint: startEndpoint,
+          body: JSON.parse(startBodyKey) as Record<string, string>,
+        });
 
         if (ignore) {
           return;
@@ -165,7 +179,7 @@ export function useLessonSession(lessonSlug: string) {
     return () => {
       ignore = true;
     };
-  }, [lessonSlug, startSeed]);
+  }, [lessonSlug, startSeed, startKey, startEndpoint, startBodyKey]);
 
   return {
     sessionStatus,

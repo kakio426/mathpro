@@ -11,6 +11,8 @@ export const reportStatusSchema = z.enum(["pending", "ready", "failed"]);
 export type ReportStatus = z.infer<typeof reportStatusSchema>;
 
 export const trackedSessionEventTypeSchema = z.enum([
+  "ready",
+  "interaction",
   "select",
   "drag-end",
   "drop",

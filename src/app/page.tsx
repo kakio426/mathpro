@@ -1,7 +1,5 @@
-import { HomeHero } from "@/components/home/home-hero";
+import { TeacherWorkspace } from "@/components/teacher/teacher-workspace";
 
 export default function Home() {
-  return (
-    <HomeHero />
-  );
+  return <TeacherWorkspace />;
 }

@@ -93,6 +93,8 @@ const sessionEventRowSchema = z.object({
   activity_id: z.string().min(1),
   event_type: z.union([
     z.enum([
+      "ready",
+      "interaction",
       "select",
       "drag-end",
       "drop",
@@ -176,6 +178,7 @@ export type SessionStore = {
     moduleId: string;
     moduleVersion: string;
     lessonSlug: string;
+    assignmentId?: string;
   }): Promise<LearningSession>;
   findLearningSessionById(sessionId: string): Promise<LearningSession | null>;
   touchLearningSessionLatestEvent(
@@ -257,6 +260,7 @@ export function createSupabaseSessionStore(
       moduleId,
       moduleVersion,
       lessonSlug,
+      assignmentId,
     }) {
       const { data, error } = await supabase
         .from("learning_sessions")
@@ -265,6 +269,7 @@ export function createSupabaseSessionStore(
           module_id: moduleId,
           module_version: moduleVersion,
           lesson_slug: lessonSlug,
+          assignment_id: assignmentId,
           status: "started",
         })
         .select("*")

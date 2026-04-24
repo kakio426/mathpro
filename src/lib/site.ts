@@ -2,9 +2,9 @@ export const siteConfig = {
   name: "수학프로",
   moduleName: "분수 탐험실",
   description:
-    "수학프로는 2022 개정 초등 수학의 개념을 조작, 예측, 설명, 일반화의 흐름으로 탐구하는 인터랙션 학습 플랫폼입니다.",
-  tagline: "2022 개정 초등 수학을 위한 인터랙션 학습 서비스",
-  shellStage: "S4 세션 러너",
+    "수학프로는 교사가 조작형 수학 활동을 만들고 학생에게 코드로 배포한 뒤 이해 과정을 분석하는 인터랙티브 수업 플랫폼입니다.",
+  tagline: "교사 저작과 학생 조작 탐구를 잇는 수학 인터랙션 플랫폼",
+  shellStage: "Teacher Flow",
   lessons: [
     {
       id: "L1",

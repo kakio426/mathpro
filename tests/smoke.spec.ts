@@ -127,6 +127,216 @@ test("whole-and-part lesson runs end-to-end and redirects to report", async ({ p
   await expect(page.getByText("분모와 분자")).toBeVisible();
 });
 
+test("teacher creates a draft and publishes an assignment code", async ({ page }) => {
+  const now = "2026-04-24T00:00:00.000Z";
+  const document = {
+    id: "draft-e2e",
+    title: "분수의 의미 인터랙티브 탐구",
+    gradeBand: "3-4",
+    concept: "분수의 의미",
+    goal: "전체를 같은 크기로 나눈 것 중 일부라는 분수의 의미를 조작으로 설명한다.",
+    difficulty: "standard",
+    sourceLessonSlug: "whole-and-part",
+    status: "draft",
+    createdAt: now,
+    updatedAt: now,
+    blocks: [
+      {
+        id: "L1-A1",
+        type: "intro",
+        title: "출발점 확인",
+        instruction: "분수가 되려면 어떤 설명이 먼저 맞아야 할까요?",
+        sourceActivityId: "L1-A1",
+        analysisHooks: [
+          {
+            id: "L1-A1:incorrect-final",
+            signal: "incorrect-final",
+            label: "마지막 제출에서 개념 연결이 흔들림",
+          },
+        ],
+      },
+      {
+        id: "L1-A2",
+        type: "manipulation",
+        title: "직접 만져보는 탐구",
+        instruction: "막대를 4등분한 뒤 2칸을 선택해 2/4를 만들어 보세요.",
+        interactionKind: "fraction-bars",
+        sourceActivityId: "L1-A2",
+        analysisHooks: [
+          {
+            id: "L1-A2:manipulation-pattern",
+            signal: "manipulation-pattern",
+            label: "조작 순서와 선택 패턴 관찰",
+          },
+        ],
+      },
+    ],
+  };
+
+  await page.route("**/api/teacher/activities/draft", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ document }),
+    });
+  });
+
+  await page.route("**/api/teacher/activities/publish", async (route) => {
+    await route.fulfill({
+      status: 201,
+      contentType: "application/json",
+      body: JSON.stringify({
+        assignment: {
+          id: "assignment-e2e",
+          activityId: "activity-e2e",
+          code: "ABC123",
+          status: "active",
+          publishedAt: now,
+          shareUrl: "http://localhost:3000/play/ABC123",
+          document: {
+            ...document,
+            id: "activity-e2e",
+            status: "published",
+          },
+        },
+      }),
+    });
+  });
+
+  await page.goto("/");
+
+  await expect(
+    page.getByRole("heading", { name: "HTML 인터랙티브 자료 만들기" }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: /HTML 자료 문서 만들기/ }).click();
+  await expect(page.getByText("직접 만져보는 탐구")).toBeVisible();
+  await page.getByRole("button", { name: /발행하기/ }).click();
+  await expect(page.getByText("ABC123")).toBeVisible();
+  await expect(page.getByRole("link", { name: /학생 화면/ })).toHaveAttribute(
+    "href",
+    "/play/ABC123",
+  );
+});
+
+test("HTML artifact play route stores iframe events and completes through the bridge", async ({
+  page,
+}) => {
+  const sessionId = "session-html-e2e";
+  const eventRequests: unknown[] = [];
+  const completeRequests: unknown[] = [];
+
+  await page.route("**/api/assignments/HTML01/sessions", async (route) => {
+    await route.fulfill({
+      status: 201,
+      contentType: "application/json",
+      body: JSON.stringify({
+        sessionId,
+        guestId: "guest-html-e2e",
+        lessonSlug: "whole-and-part",
+        assignmentId: "assignment-html-e2e",
+        assignmentCode: "HTML01",
+        status: "started",
+        reportStatus: "pending",
+      }),
+    });
+  });
+
+  await page.route(`**/api/sessions/${sessionId}/events`, async (route) => {
+    eventRequests.push(route.request().postDataJSON());
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        ok: true,
+        duplicated: false,
+      }),
+    });
+  });
+
+  await page.route(`**/api/sessions/${sessionId}/complete`, async (route) => {
+    completeRequests.push(route.request().postDataJSON());
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        sessionId,
+        status: "completed",
+        reportStatus: "ready",
+      }),
+    });
+  });
+
+  await page.route(`**/api/reports/${sessionId}`, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        sessionId,
+        status: "ready",
+        summaryJson: {
+          understoodConcepts: ["전체와 부분"],
+          watchMisconceptions: ["현재 뚜렷한 오개념 없음"],
+          explanationSummary:
+            "HTML 자료 안에서 분수 막대를 조작해 전체와 부분을 연결했습니다.",
+          recommendedNextLessonId: "denominator-and-numerator",
+          recommendedNextLessonTitle: "분모와 분자",
+        },
+        generatedAt: "2026-04-24T00:00:00.000Z",
+      }),
+    });
+  });
+
+  await page.goto("/play/HTML01");
+
+  await expect(
+    page.getByRole("heading", { name: "분수 HTML 조작 자료" }),
+  ).toBeVisible();
+
+  const artifactFrame = page.frameLocator(
+    'iframe[title="분수 막대 실험 실행 화면"]',
+  );
+  await artifactFrame.getByRole("button", { name: "첫 번째 조각 선택" }).click();
+
+  await expect
+    .poll(
+      () =>
+        eventRequests.some(
+          (request) =>
+            typeof request === "object" &&
+            request !== null &&
+            "eventType" in request &&
+            request.eventType === "select",
+        ),
+    )
+    .toBe(true);
+  const selectRequest = eventRequests.find(
+    (request) =>
+      typeof request === "object" &&
+      request !== null &&
+      "eventType" in request &&
+      request.eventType === "select",
+  );
+
+  expect(selectRequest).toMatchObject({
+    activityId: "html-artifact-e2e",
+    eventType: "select",
+    payload: {
+      selectedParts: [1],
+      response: "1/4",
+      artifactEventType: "select",
+      blockId: "html-artifact-e2e",
+      assignmentCode: "HTML01",
+    },
+  });
+
+  await artifactFrame.getByRole("button", { name: "완료하기" }).click();
+
+  await expect.poll(() => completeRequests.length).toBe(1);
+  await expect(page).toHaveURL(/\/report\/session-html-e2e$/);
+  await expect(page.getByText("준비 완료")).toBeVisible();
+  await expect(page.getByText("분모와 분자")).toBeVisible();
+});
+
 test("fractions-on-a-number-line lesson handles the slider interaction and advances into prediction", async ({
   page,
 }) => {
