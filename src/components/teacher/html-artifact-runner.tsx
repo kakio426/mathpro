@@ -139,6 +139,23 @@ function readArtifactPayload(data: unknown): JsonObject {
   return toJsonObject(record.payload ?? record);
 }
 
+function artifactStateLabel(
+  state: "booting" | "ready" | "running" | "completed" | "error",
+) {
+  switch (state) {
+    case "booting":
+      return "세션 준비";
+    case "ready":
+      return "자료 준비 완료";
+    case "running":
+      return "조작 기록 중";
+    case "completed":
+      return "활동 완료";
+    case "error":
+      return "저장 확인 필요";
+  }
+}
+
 export function HtmlArtifactRunner({
   assignment,
   block,
@@ -264,7 +281,7 @@ export function HtmlArtifactRunner({
             <CardHeader>
               <CardTitle>참여 세션을 준비하고 있어요</CardTitle>
               <CardDescription>
-                HTML 인터랙티브 자료를 열기 전에 저장 세션을 만들고 있습니다.
+                움직이는 수업자료를 열기 전에 저장 세션을 만들고 있습니다.
               </CardDescription>
             </CardHeader>
           </Card>
@@ -297,23 +314,40 @@ export function HtmlArtifactRunner({
   }
 
   return (
-    <section className="py-[var(--space-section)]">
-      <Container className="space-y-6">
-        <div className="flex flex-wrap items-center gap-3">
-          <Badge variant="accent">HTML Artifact</Badge>
-          <Badge>참여 코드 {assignment.code}</Badge>
-          <Badge>{artifactState}</Badge>
+    <section className="py-6 sm:py-8">
+      <Container className="max-w-[1500px] space-y-5">
+        <div className="rounded-[2rem] border border-border bg-[#12312e] p-5 text-white shadow-soft sm:p-6">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+            <div className="space-y-3">
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge className="border-white/20 bg-white/10 text-white">
+                  학생 실행 무대
+                </Badge>
+                <Badge className="border-amber-200/40 bg-amber-300/15 text-amber-100">
+                  참여 코드 {assignment.code}
+                </Badge>
+              </div>
+              <div>
+                <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+                  {block.title}
+                </h2>
+                <p className="mt-2 max-w-3xl text-sm leading-7 text-teal-50/80">
+                  {block.instruction}
+                </p>
+              </div>
+            </div>
+            <div className="rounded-2xl border border-white/15 bg-white/10 px-4 py-3 text-sm">
+              <p className="text-teal-100/70">현재 상태</p>
+              <p className="mt-1 font-semibold">
+                {artifactStateLabel(artifactState)}
+              </p>
+            </div>
+          </div>
         </div>
 
-        <Card className="overflow-hidden">
-          <CardHeader className="space-y-3">
-            <CardTitle className="text-2xl">{block.title}</CardTitle>
-            <CardDescription className="text-base leading-7">
-              {block.instruction}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-5">
-            <div className="overflow-hidden rounded-[var(--radius-lg)] border border-border bg-white shadow-soft">
+        <Card className="overflow-hidden rounded-[2rem] bg-[#fefbf5]">
+          <CardContent className="space-y-4 p-3 sm:p-4">
+            <div className="overflow-hidden rounded-[1.6rem] border border-border bg-white shadow-soft">
               <iframe
                 ref={iframeRef}
                 title={`${block.title} 실행 화면`}
@@ -321,39 +355,43 @@ export function HtmlArtifactRunner({
                 referrerPolicy="no-referrer"
                 sandbox="allow-scripts"
                 srcDoc={block.html}
-                className="h-[620px] w-full bg-white"
+                className="h-[72vh] min-h-[560px] w-full bg-white"
               />
             </div>
 
-            <Separator />
-
-            <div className="grid gap-4 text-sm leading-6 text-muted md:grid-cols-[1.3fr_0.7fr]">
-              <div className="space-y-2">
-                <p className="font-semibold text-foreground">
-                  이벤트 브리지 상태
-                </p>
-                <p>
-                  자료 안에서 보낸 `postMessage`를 세션 이벤트로 저장합니다.
-                  완료 이벤트가 오면 학생 리포트로 이동합니다.
-                </p>
-                {bridgeError ? (
-                  <p className="text-red-700">{bridgeError}</p>
-                ) : null}
+            <details className="group rounded-[1.25rem] border border-border bg-white/70 p-4 text-sm leading-6 text-muted">
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-3 font-semibold text-foreground">
+                <span>활동 저장 상태 보기</span>
+                <span className="rounded-full bg-secondary px-3 py-1 text-xs text-muted">
+                  기록 {eventLog.length}개
+                </span>
+              </summary>
+              <Separator className="my-4" />
+              <div className="grid gap-4 md:grid-cols-[1.3fr_0.7fr]">
+                <div className="space-y-2">
+                  <p>
+                    자료 안에서 발생한 선택, 제출, 완료 신호를 학습 기록으로 저장합니다.
+                    활동이 끝나면 학생 리포트 화면으로 이동합니다.
+                  </p>
+                  {bridgeError ? (
+                    <p className="text-red-700">{bridgeError}</p>
+                  ) : null}
+                </div>
+                <div className="space-y-2 rounded-2xl bg-secondary/55 p-4">
+                  <p className="font-semibold text-foreground">최근 조작 기록</p>
+                  {eventLog.length > 0 ? (
+                    eventLog.map((entry) => (
+                      <p key={`${entry.eventType}:${entry.receivedAt}`}>
+                        {entry.eventType} ·{" "}
+                        {new Date(entry.receivedAt).toLocaleTimeString("ko-KR")}
+                      </p>
+                    ))
+                  ) : (
+                    <p>아직 저장된 조작 기록이 없습니다.</p>
+                  )}
+                </div>
               </div>
-              <div className="space-y-2 rounded-[var(--radius-md)] bg-secondary/55 p-4">
-                <p className="font-semibold text-foreground">최근 이벤트</p>
-                {eventLog.length > 0 ? (
-                  eventLog.map((entry) => (
-                    <p key={`${entry.eventType}:${entry.receivedAt}`}>
-                      {entry.eventType} ·{" "}
-                      {new Date(entry.receivedAt).toLocaleTimeString("ko-KR")}
-                    </p>
-                  ))
-                ) : (
-                  <p>아직 iframe 이벤트가 도착하지 않았습니다.</p>
-                )}
-              </div>
-            </div>
+            </details>
           </CardContent>
         </Card>
       </Container>

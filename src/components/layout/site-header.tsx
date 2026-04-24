@@ -7,11 +7,21 @@ import { siteConfig } from "@/lib/site";
 
 export function SiteHeader() {
   return (
-    <header className="sticky top-0 z-20 border-b border-border bg-surface/70 backdrop-blur">
+    <header className="sticky top-0 z-20 border-b border-border bg-surface/82 backdrop-blur-xl">
       <Container className="flex min-h-16 items-center justify-between gap-4">
         <div className="flex min-w-0 items-center gap-3">
-          <Link className="truncate text-lg font-semibold tracking-tight" href="/">
-            {siteConfig.name}
+          <Link className="flex min-w-0 items-center gap-3" href="/">
+            <span className="grid size-9 shrink-0 place-items-center rounded-2xl bg-primary text-sm font-semibold text-primary-foreground shadow-card">
+              수
+            </span>
+            <span className="min-w-0">
+              <span className="block truncate text-lg font-semibold tracking-tight">
+                {siteConfig.name} 제작실
+              </span>
+              <span className="hidden text-xs font-semibold tracking-[0.16em] text-muted uppercase sm:block">
+                교사용 인터랙티브 자료 제작
+              </span>
+            </span>
           </Link>
           <Badge variant="accent">{siteConfig.shellStage}</Badge>
         </div>

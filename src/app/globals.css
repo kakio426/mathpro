@@ -7,8 +7,17 @@
 
 html {
   background:
-    radial-gradient(circle at top, rgba(13, 148, 136, 0.16), transparent 36%),
-    linear-gradient(180deg, #f6efe4 0%, #f5f1eb 46%, #f8f6f2 100%);
+    linear-gradient(rgba(11, 95, 89, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(11, 95, 89, 0.035) 1px, transparent 1px),
+    radial-gradient(circle at 18% 8%, rgba(13, 148, 136, 0.18), transparent 30%),
+    radial-gradient(circle at 86% 4%, rgba(217, 138, 8, 0.18), transparent 26%),
+    linear-gradient(180deg, #f4eddf 0%, #f7f1e8 48%, #fbf8f2 100%);
+  background-size:
+    28px 28px,
+    28px 28px,
+    auto,
+    auto,
+    auto;
 }
 
 body {
@@ -44,4 +53,20 @@ textarea {
   [data-shell-grid="two"] {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+}
+
+@keyframes guided-tour-pop {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.guided-tour-dialog {
+  animation: guided-tour-pop 220ms ease-out;
 }

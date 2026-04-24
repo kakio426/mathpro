@@ -21,12 +21,12 @@ describe("HomeHero", () => {
 
     expect(
       screen.getByRole("heading", {
-        name: "HTML 인터랙티브 자료 만들기",
+        name: "AI로 만든 움직이는 수업자료",
       }),
     ).toBeInTheDocument();
     expect(screen.getByText(`${siteConfig.name}`)).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: /HTML 자료 문서 만들기/ }),
+      screen.getByRole("button", { name: /자료 문서 만들기/ }),
     ).toBeInTheDocument();
   });
 });

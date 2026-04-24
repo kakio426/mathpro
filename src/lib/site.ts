@@ -4,7 +4,7 @@ export const siteConfig = {
   description:
     "수학프로는 교사가 조작형 수학 활동을 만들고 학생에게 코드로 배포한 뒤 이해 과정을 분석하는 인터랙티브 수업 플랫폼입니다.",
   tagline: "교사 저작과 학생 조작 탐구를 잇는 수학 인터랙션 플랫폼",
-  shellStage: "Teacher Flow",
+  shellStage: "제작 스튜디오",
   lessons: [
     {
       id: "L1",

@@ -206,9 +206,9 @@ test("teacher creates a draft and publishes an assignment code", async ({ page }
   await page.goto("/");
 
   await expect(
-    page.getByRole("heading", { name: "HTML 인터랙티브 자료 만들기" }),
+    page.getByRole("heading", { name: "AI로 만든 움직이는 수업자료" }),
   ).toBeVisible();
-  await page.getByRole("button", { name: /HTML 자료 문서 만들기/ }).click();
+  await page.getByRole("button", { name: /자료 문서 만들기/ }).click();
   await expect(page.getByText("직접 만져보는 탐구")).toBeVisible();
   await page.getByRole("button", { name: /발행하기/ }).click();
   await expect(page.getByText("ABC123")).toBeVisible();
@@ -289,7 +289,7 @@ test("HTML artifact play route stores iframe events and completes through the br
   await page.goto("/play/HTML01");
 
   await expect(
-    page.getByRole("heading", { name: "분수 HTML 조작 자료" }),
+    page.getByRole("heading", { name: "분수 막대 조작 자료" }),
   ).toBeVisible();
 
   const artifactFrame = page.frameLocator(

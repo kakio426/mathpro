@@ -216,6 +216,6 @@ describe("PlayAssignmentPage", () => {
 
     expect(getAssignmentByCodeMock).toHaveBeenCalledWith("REAL01");
     expect(screen.getByText("참여 코드 ABC123")).toBeInTheDocument();
-    expect(screen.queryByText("분수 HTML 조작 자료")).not.toBeInTheDocument();
+    expect(screen.queryByText("분수 막대 조작 자료")).not.toBeInTheDocument();
   });
 });
