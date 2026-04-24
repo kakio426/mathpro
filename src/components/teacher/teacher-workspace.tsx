@@ -122,10 +122,25 @@ const sampleHtmlArtifact = `<!doctype html>
 </html>`;
 
 const navItems = [
-  { label: "자료 만들기", icon: Wand2, active: true },
-  { label: "내 자료", icon: Blocks, active: false },
-  { label: "배포/참여", icon: QrCode, active: false },
-  { label: "결과 보기", icon: BarChart3, active: false },
+  { label: "자료 만들기", href: "/" as Route, icon: Wand2, active: true },
+  {
+    label: "내 자료",
+    href: "/teacher/activities" as Route,
+    icon: Blocks,
+    active: false,
+  },
+  {
+    label: "배포/참여",
+    href: "/teacher/distribution" as Route,
+    icon: QrCode,
+    active: false,
+  },
+  {
+    label: "결과 보기",
+    href: "/teacher/reports" as Route,
+    icon: BarChart3,
+    active: false,
+  },
 ];
 
 const studioSteps = [
@@ -422,18 +437,18 @@ export function TeacherWorkspace() {
                   const Icon = item.icon;
 
                   return (
-                    <button
+                    <Link
                       key={item.label}
+                      href={item.href}
                       className={`flex h-11 items-center gap-3 rounded-2xl px-3 text-left text-sm font-semibold transition ${
                         item.active
                           ? "bg-primary text-primary-foreground shadow-card"
                           : "text-foreground hover:bg-white/80"
                       }`}
-                      type="button"
                     >
                       <Icon className="size-4" />
                       {item.label}
-                    </button>
+                    </Link>
                   );
                 })}
               </nav>

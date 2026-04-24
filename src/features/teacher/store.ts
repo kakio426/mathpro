@@ -2,9 +2,11 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import {
   publishedAssignmentSchema,
+  publishedAssignmentListItemSchema,
   teacherActivityDocumentSchema,
   teacherReportSummarySchema,
   type PublishedAssignment,
+  type PublishedAssignmentListItem,
   type TeacherActivityDocument,
   type TeacherReportSummary,
 } from "@/types/teacher";
@@ -35,6 +37,11 @@ type PublishedAssignmentRow = {
 
 type LearningSessionSummaryRow = {
   id: string;
+  status: "started" | "completed" | "abandoned";
+};
+
+type LearningSessionAssignmentSummaryRow = {
+  assignment_id: string | null;
   status: "started" | "completed" | "abandoned";
 };
 
@@ -95,6 +102,7 @@ export type TeacherStore = {
     document: TeacherActivityDocument;
     origin: string;
   }): Promise<PublishedAssignment>;
+  listPublishedAssignments(): Promise<PublishedAssignmentListItem[]>;
   findAssignmentByCode(code: string): Promise<PublishedAssignment | null>;
   summarizeAssignment(assignmentId: string): Promise<TeacherReportSummary | null>;
 };
@@ -172,6 +180,90 @@ export function createSupabaseTeacherStore(
       }
 
       return toPublishedAssignment(assignment);
+    },
+
+    async listPublishedAssignments() {
+      const { data, error } = await supabase
+        .from("published_assignments")
+        .select("*, teacher_activities(*)")
+        .order("published_at", { ascending: false })
+        .limit(50);
+
+      if (error) {
+        throw new Error(
+          formatStoreError("Failed to list published assignments", error.message),
+        );
+      }
+
+      const rows = (data ?? []) as PublishedAssignmentRow[];
+      const assignments = rows.map((row) => toPublishedAssignment(row));
+      const assignmentIds = assignments.map((assignment) => assignment.id);
+      const countsByAssignmentId = new Map<
+        string,
+        { participantCount: number; completedCount: number }
+      >();
+
+      if (assignmentIds.length > 0) {
+        const { data: sessions, error: sessionsError } = await supabase
+          .from("learning_sessions")
+          .select("assignment_id, status")
+          .in("assignment_id", assignmentIds);
+
+        if (sessionsError) {
+          throw new Error(
+            formatStoreError(
+              "Failed to list assignment sessions",
+              sessionsError.message,
+            ),
+          );
+        }
+
+        ((sessions ?? []) as LearningSessionAssignmentSummaryRow[]).forEach(
+          (session) => {
+            if (!session.assignment_id) {
+              return;
+            }
+
+            const current = countsByAssignmentId.get(session.assignment_id) ?? {
+              participantCount: 0,
+              completedCount: 0,
+            };
+
+            current.participantCount += 1;
+
+            if (session.status === "completed") {
+              current.completedCount += 1;
+            }
+
+            countsByAssignmentId.set(session.assignment_id, current);
+          },
+        );
+      }
+
+      return assignments.map((assignment) => {
+        const counts = countsByAssignmentId.get(assignment.id) ?? {
+          participantCount: 0,
+          completedCount: 0,
+        };
+
+        return publishedAssignmentListItemSchema.parse({
+          id: assignment.id,
+          activityId: assignment.activityId,
+          code: assignment.code,
+          status: assignment.status,
+          publishedAt: assignment.publishedAt,
+          shareUrl: assignment.shareUrl,
+          title: assignment.document.title,
+          concept: assignment.document.concept,
+          goal: assignment.document.goal,
+          gradeBand: assignment.document.gradeBand,
+          difficulty: assignment.document.difficulty,
+          sourceLessonSlug: assignment.document.sourceLessonSlug,
+          blockCount: assignment.document.blocks.length,
+          participantCount: counts.participantCount,
+          completedCount: counts.completedCount,
+        });
+      });
     },
 
     async findAssignmentByCode(code) {

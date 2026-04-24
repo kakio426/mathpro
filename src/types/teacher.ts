@@ -126,6 +126,27 @@ export const publishedAssignmentSchema = z.object({
 });
 export type PublishedAssignment = z.infer<typeof publishedAssignmentSchema>;
 
+export const publishedAssignmentListItemSchema = z.object({
+  id: z.string().min(1),
+  activityId: z.string().min(1),
+  code: z.string().min(4),
+  status: z.enum(["active", "closed"]),
+  publishedAt: z.string().datetime({ offset: true }),
+  shareUrl: z.string().url(),
+  title: z.string().min(1),
+  concept: z.string().min(1),
+  goal: z.string().min(1),
+  gradeBand: gradeBandSchema,
+  difficulty: teacherDifficultySchema,
+  sourceLessonSlug: z.string().min(1),
+  blockCount: z.number().int().nonnegative(),
+  participantCount: z.number().int().nonnegative(),
+  completedCount: z.number().int().nonnegative(),
+});
+export type PublishedAssignmentListItem = z.infer<
+  typeof publishedAssignmentListItemSchema
+>;
+
 export const assignmentStartSessionResponseSchema = z.object({
   sessionId: z.string().min(1),
   guestId: z.string().min(1),

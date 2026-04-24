@@ -29,6 +29,15 @@ export function SiteHeader() {
           <Button asChild size="sm" variant="ghost">
             <Link href="/">자료 만들기</Link>
           </Button>
+          <Button asChild size="sm" variant="ghost">
+            <Link href={"/teacher/activities" as Route}>내 자료</Link>
+          </Button>
+          <Button asChild size="sm" variant="ghost">
+            <Link href={"/teacher/distribution" as Route}>배포</Link>
+          </Button>
+          <Button asChild size="sm" variant="ghost">
+            <Link href={"/teacher/reports" as Route}>결과</Link>
+          </Button>
           <Button asChild size="sm" variant="secondary">
             <Link href={"/join" as Route}>참여 코드</Link>
           </Button>

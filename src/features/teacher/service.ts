@@ -11,6 +11,7 @@ import type {
   AssignmentStartSessionResponse,
   CreateTeacherDraftRequest,
   PublishedAssignment,
+  PublishedAssignmentListItem,
   TeacherActivityDocument,
   TeacherReportSummary,
 } from "@/types/teacher";
@@ -63,6 +64,10 @@ export function createTeacherService({
 
       loadLessonSpec(safeDocument.sourceLessonSlug);
       return teacherStore.publishActivity({ document: safeDocument, origin });
+    },
+
+    async listPublishedAssignments(): Promise<PublishedAssignmentListItem[]> {
+      return teacherStore.listPublishedAssignments();
     },
 
     async getAssignmentByCode(code: string): Promise<PublishedAssignment> {
