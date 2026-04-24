@@ -214,6 +214,7 @@ export default async function PlayAssignmentPage({
                   <Badge>조작 기록 저장</Badge>
                 </div>
                 <GuidedTour
+                  autoOpen
                   startLabel="학생 화면 안내"
                   steps={playTourSteps}
                   storageKey="mathpro:tour:play"

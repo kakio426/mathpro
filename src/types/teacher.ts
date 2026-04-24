@@ -160,6 +160,48 @@ export type AssignmentStartSessionResponse = z.infer<
   typeof assignmentStartSessionResponseSchema
 >;
 
+export const teacherReportSessionDetailSchema = z.object({
+  sessionId: z.string().min(1),
+  label: z.string().min(1),
+  status: z.enum(["started", "completed", "abandoned"]),
+  startedAt: z.string().nullable(),
+  completedAt: z.string().nullable(),
+  latestEventAt: z.string().nullable(),
+  eventCount: z.number().int().nonnegative(),
+  submitCount: z.number().int().nonnegative(),
+  incorrectSubmitCount: z.number().int().nonnegative(),
+  hintCount: z.number().int().nonnegative(),
+  retryCount: z.number().int().nonnegative(),
+  firstEventAt: z.string().nullable(),
+  lastEventAt: z.string().nullable(),
+  topActivityTitle: z.string().min(1),
+  lastResponse: z.string().nullable(),
+  observation: z.string().min(1),
+});
+export type TeacherReportSessionDetail = z.infer<
+  typeof teacherReportSessionDetailSchema
+>;
+
+export const teacherReportActivitySummarySchema = z.object({
+  activityId: z.string().min(1),
+  title: z.string().min(1),
+  blockType: activityBlockTypeSchema,
+  eventCount: z.number().int().nonnegative(),
+  sessionCount: z.number().int().nonnegative(),
+  submitCount: z.number().int().nonnegative(),
+  incorrectSubmitCount: z.number().int().nonnegative(),
+  hintCount: z.number().int().nonnegative(),
+  retryCount: z.number().int().nonnegative(),
+  completeCount: z.number().int().nonnegative(),
+  firstEventAt: z.string().nullable(),
+  lastEventAt: z.string().nullable(),
+  summary: z.string().min(1),
+  nextAction: z.string().min(1),
+});
+export type TeacherReportActivitySummary = z.infer<
+  typeof teacherReportActivitySummarySchema
+>;
+
 export const teacherReportSummarySchema = z.object({
   assignmentId: z.string().min(1),
   code: z.string().min(4),
@@ -171,5 +213,7 @@ export const teacherReportSummarySchema = z.object({
   dwellPatterns: z.array(z.string().min(1)).min(1),
   misconceptionSignals: z.array(z.string().min(1)).min(1),
   nextTeachingMoves: z.array(z.string().min(1)).min(1),
+  sessionDetails: z.array(teacherReportSessionDetailSchema),
+  activitySummaries: z.array(teacherReportActivitySummarySchema),
 });
 export type TeacherReportSummary = z.infer<typeof teacherReportSummarySchema>;

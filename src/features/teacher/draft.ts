@@ -108,7 +108,7 @@ function createHtmlArtifactBlock(
     title: `${input.concept} HTML 인터랙티브 자료`,
     instruction:
       "붙여넣은 HTML을 학생 화면에서 실행하고 postMessage 이벤트를 수집합니다.",
-    interactionKind: "html-artifact",
+    interactionKind: input.interactionKind,
     html: input.html,
     allowedEvents: [...defaultHtmlArtifactEvents],
     analysisSchema: {

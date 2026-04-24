@@ -38,6 +38,9 @@ type PublishedAssignmentRow = {
 type LearningSessionSummaryRow = {
   id: string;
   status: "started" | "completed" | "abandoned";
+  started_at: string | null;
+  completed_at: string | null;
+  latest_event_at: string | null;
 };
 
 type LearningSessionAssignmentSummaryRow = {
@@ -103,6 +106,7 @@ export type TeacherStore = {
     origin: string;
   }): Promise<PublishedAssignment>;
   listPublishedAssignments(): Promise<PublishedAssignmentListItem[]>;
+  findAssignmentById(assignmentId: string): Promise<PublishedAssignment | null>;
   findAssignmentByCode(code: string): Promise<PublishedAssignment | null>;
   summarizeAssignment(assignmentId: string): Promise<TeacherReportSummary | null>;
 };
@@ -266,6 +270,20 @@ export function createSupabaseTeacherStore(
       });
     },
 
+    async findAssignmentById(assignmentId) {
+      const { data, error } = await supabase
+        .from("published_assignments")
+        .select("*, teacher_activities(*)")
+        .eq("id", assignmentId)
+        .maybeSingle();
+
+      if (error) {
+        throw new Error(formatStoreError("Failed to load assignment", error.message));
+      }
+
+      return data ? toPublishedAssignment(data as PublishedAssignmentRow) : null;
+    },
+
     async findAssignmentByCode(code) {
       const { data, error } = await supabase
         .from("published_assignments")
@@ -304,7 +322,7 @@ export function createSupabaseTeacherStore(
 
       const { data: sessions, error: sessionsError } = await supabase
         .from("learning_sessions")
-        .select("id, status")
+        .select("id, status, started_at, completed_at, latest_event_at")
         .eq("assignment_id", assignmentId);
 
       if (sessionsError) {
@@ -313,7 +331,15 @@ export function createSupabaseTeacherStore(
         );
       }
 
-      const parsedSessions = (sessions ?? []) as LearningSessionSummaryRow[];
+      const parsedSessions = ((sessions ?? []) as LearningSessionSummaryRow[]).map(
+        (session) => ({
+          id: session.id,
+          status: session.status,
+          startedAt: session.started_at,
+          completedAt: session.completed_at,
+          latestEventAt: session.latest_event_at,
+        }),
+      );
       const sessionIds = parsedSessions.map((session) => session.id);
       let events: TeacherAssignmentEventRecord[] = [];
 

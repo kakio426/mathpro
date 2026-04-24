@@ -45,6 +45,25 @@ describe("validateHtmlArtifactSafety", () => {
     expect(result.warnings).toHaveLength(0);
   });
 
+  it("recognizes a helper call that sends the complete event", () => {
+    const result = validateHtmlArtifactSafety(`
+      <script>
+        const send = (eventType, payload) => {
+          window.parent.postMessage({
+            source: "mathpro-html-activity",
+            type: eventType,
+            eventType,
+            payload
+          }, "*");
+        };
+
+        send("complete", { isCorrect: true });
+      </script>
+    `);
+
+    expect(result.status).toBe("passed");
+  });
+
   it("blocks external network and storage access", () => {
     const result = validateHtmlArtifactSafety(`
       <script>
@@ -75,6 +94,35 @@ describe("validateHtmlArtifactSafety", () => {
         "javascript-url",
         "meta-refresh",
       ]),
+    );
+  });
+
+  it("allows ordinary CSS position words while still blocking top window access", () => {
+    const cssOnly = validateHtmlArtifactSafety(`
+      <style>
+        .marker { position: absolute; top: 12px; margin-top: 8px; }
+      </style>
+      <script>
+        const send = (eventType, payload) => {
+          window.parent.postMessage({
+            source: "mathpro-html-activity",
+            eventType,
+            payload
+          }, "*");
+        };
+        send("complete", {});
+      </script>
+    `);
+    const topWindowAccess = validateHtmlArtifactSafety(`
+      <script>
+        window.top.location.href = "https://example.com";
+      </script>
+    `);
+
+    expect(cssOnly.status).toBe("passed");
+    expect(topWindowAccess.status).toBe("blocked");
+    expect(topWindowAccess.issues.map((issue) => issue.code)).toContain(
+      "top-navigation",
     );
   });
 

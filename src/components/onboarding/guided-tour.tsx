@@ -15,23 +15,71 @@ export type GuidedTourStep = {
 type GuidedTourProps = {
   storageKey: string;
   steps: GuidedTourStep[];
+  autoOpen?: boolean;
   startLabel?: string;
   className?: string;
+  dontShowAgainLabel?: string;
 };
+
+const dismissedState = "dismissed";
+const seenState = "seen";
+const legacyOpenedState = "opened";
+
+function readTourState(storageKey: string) {
+  try {
+    return window.localStorage.getItem(storageKey);
+  } catch {
+    return null;
+  }
+}
+
+function writeTourState(storageKey: string, value: string) {
+  try {
+    window.localStorage.setItem(storageKey, value);
+  } catch {
+    // 안내 모달은 저장 실패와 무관하게 동작해야 합니다.
+  }
+}
+
+function hasSeenTour(value: string | null) {
+  return (
+    value === seenState ||
+    value === dismissedState ||
+    value === legacyOpenedState
+  );
+}
 
 export function GuidedTour({
   storageKey,
   steps,
+  autoOpen = false,
   startLabel = "화면 안내 보기",
   className,
+  dontShowAgainLabel = "이 화면 안내 다시 자동으로 보지 않기",
 }: GuidedTourProps) {
   const titleId = useId();
   const descriptionId = useId();
+  const dontShowAgainId = useId();
   const [isOpen, setIsOpen] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [dontShowAgain, setDontShowAgain] = useState(false);
   const currentStep = steps[currentIndex];
   const isFirst = currentIndex === 0;
   const isLast = currentIndex === steps.length - 1;
+
+  useEffect(() => {
+    if (!autoOpen || steps.length === 0 || hasSeenTour(readTourState(storageKey))) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setCurrentIndex(0);
+      setDontShowAgain(false);
+      setIsOpen(true);
+    }, 0);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [autoOpen, steps.length, storageKey]);
 
   useEffect(() => {
     if (!isOpen) {
@@ -40,23 +88,38 @@ export function GuidedTour({
 
     function closeOnEscape(event: KeyboardEvent) {
       if (event.key === "Escape") {
+        const currentState = readTourState(storageKey);
+
+        if (dontShowAgain) {
+          writeTourState(storageKey, dismissedState);
+        } else if (autoOpen && currentState !== dismissedState) {
+          writeTourState(storageKey, seenState);
+        }
+
         setIsOpen(false);
       }
     }
 
     document.addEventListener("keydown", closeOnEscape);
     return () => document.removeEventListener("keydown", closeOnEscape);
-  }, [isOpen]);
+  }, [autoOpen, dontShowAgain, isOpen, storageKey]);
 
   function openTour() {
     setCurrentIndex(0);
+    setDontShowAgain(false);
     setIsOpen(true);
+  }
 
-    try {
-      window.localStorage.setItem(storageKey, "opened");
-    } catch {
-      // 안내 모달은 저장 실패와 무관하게 열려야 합니다.
+  function closeTour() {
+    const currentState = readTourState(storageKey);
+
+    if (dontShowAgain) {
+      writeTourState(storageKey, dismissedState);
+    } else if (autoOpen && currentState !== dismissedState) {
+      writeTourState(storageKey, seenState);
     }
+
+    setIsOpen(false);
   }
 
   if (steps.length === 0 || !currentStep) {
@@ -110,7 +173,7 @@ export function GuidedTour({
                   aria-label="안내 닫기"
                   className="grid size-10 shrink-0 place-items-center rounded-full border border-border bg-white/75 text-muted transition hover:bg-white hover:text-foreground"
                   type="button"
-                  onClick={() => setIsOpen(false)}
+                  onClick={closeTour}
                 >
                   <X className="size-4" />
                 </button>
@@ -140,9 +203,28 @@ export function GuidedTour({
                   />
                 </div>
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                  <p className="text-sm font-semibold text-muted">
-                    {currentIndex + 1} / {steps.length}
-                  </p>
+                  <div className="space-y-2">
+                    <p className="text-sm font-semibold text-muted">
+                      {currentIndex + 1} / {steps.length}
+                    </p>
+                    {autoOpen ? (
+                      <label
+                        className="flex cursor-pointer items-center gap-2 text-xs font-semibold text-muted"
+                        htmlFor={dontShowAgainId}
+                      >
+                        <input
+                          checked={dontShowAgain}
+                          className="size-4 rounded border-border accent-primary"
+                          id={dontShowAgainId}
+                          type="checkbox"
+                          onChange={(event) =>
+                            setDontShowAgain(event.target.checked)
+                          }
+                        />
+                        {dontShowAgainLabel}
+                      </label>
+                    ) : null}
+                  </div>
                   <div className="flex items-center gap-2">
                     <Button
                       disabled={isFirst}
@@ -159,7 +241,7 @@ export function GuidedTour({
                       type="button"
                       onClick={() => {
                         if (isLast) {
-                          setIsOpen(false);
+                          closeTour();
                           return;
                         }
 

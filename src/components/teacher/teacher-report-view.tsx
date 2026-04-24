@@ -1,12 +1,17 @@
 import {
+  Activity,
   AlertTriangle,
   CheckCircle2,
   Clock3,
   Lightbulb,
+  ListChecks,
   MousePointerClick,
   Radio,
+  UserRound,
   Users,
 } from "lucide-react";
+import Link from "next/link";
+import type { Route } from "next";
 import type { ComponentType } from "react";
 import { Container } from "@/components/layout/container";
 import {
@@ -14,6 +19,7 @@ import {
   type GuidedTourStep,
 } from "@/components/onboarding/guided-tour";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -64,8 +70,8 @@ type ReportPanelProps = {
 function ReportList({ items }: { items: string[] }) {
   return (
     <ul className="space-y-3 text-sm leading-6 text-muted">
-      {items.map((item) => (
-        <li className="rounded-2xl bg-white/70 px-4 py-3" key={item}>
+      {items.map((item, index) => (
+        <li className="rounded-2xl bg-white/70 px-4 py-3" key={`${item}:${index}`}>
           {item}
         </li>
       ))}
@@ -97,6 +103,231 @@ function ReportPanel({
       </CardHeader>
       <CardContent>
         <ReportList items={items} />
+      </CardContent>
+    </Card>
+  );
+}
+
+function formatReportDate(value: string | null) {
+  if (!value) {
+    return "기록 없음";
+  }
+
+  return new Intl.DateTimeFormat("ko-KR", {
+    dateStyle: "short",
+    timeStyle: "short",
+  }).format(new Date(value));
+}
+
+function statusLabel(status: TeacherReportSummary["sessionDetails"][number]["status"]) {
+  switch (status) {
+    case "completed":
+      return "완료";
+    case "abandoned":
+      return "중단";
+    case "started":
+      return "진행 중";
+  }
+}
+
+function statusClassName(
+  status: TeacherReportSummary["sessionDetails"][number]["status"],
+) {
+  switch (status) {
+    case "completed":
+      return "border-emerald-200 bg-emerald-50 text-emerald-800";
+    case "abandoned":
+      return "border-red-200 bg-red-50 text-red-700";
+    case "started":
+      return "border-amber-200 bg-amber-50 text-amber-900";
+  }
+}
+
+function blockTypeLabel(
+  blockType: TeacherReportSummary["activitySummaries"][number]["blockType"],
+) {
+  switch (blockType) {
+    case "intro":
+      return "도입";
+    case "html-artifact":
+      return "움직이는 자료";
+    case "manipulation":
+      return "조작 탐구";
+    case "prediction":
+      return "예측";
+    case "explanation":
+      return "설명";
+    case "wrap-up":
+      return "정리";
+  }
+}
+
+function StudentSessionBoard({
+  sessions,
+}: {
+  sessions: TeacherReportSummary["sessionDetails"];
+}) {
+  return (
+    <Card className="overflow-hidden rounded-[1.75rem]">
+      <CardHeader className="space-y-3">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted">
+              학생별 참여
+            </p>
+            <CardTitle className="mt-2">누가 어떻게 활동했는가</CardTitle>
+          </div>
+          <div className="grid size-11 place-items-center rounded-2xl bg-primary/10 text-primary">
+            <UserRound className="size-5" />
+          </div>
+        </div>
+        <p className="max-w-3xl text-sm leading-6 text-muted">
+          학생 계정 없이 참여한 세션을 시간순 참여자로 정리합니다. 실제 이름표
+          연결은 다음 확장 단계에서 붙이고, 지금은 조작 흐름과 막힌 지점을 먼저 봅니다.
+        </p>
+      </CardHeader>
+      <CardContent>
+        {sessions.length === 0 ? (
+          <div className="rounded-2xl border border-dashed border-border bg-white/60 p-5 text-sm leading-6 text-muted">
+            아직 참여 세션이 없습니다. 참여 코드를 공유한 뒤 학생이 활동을 시작하면
+            이곳에 학생별 흐름이 표시됩니다.
+          </div>
+        ) : (
+          <div className="grid gap-3">
+            {sessions.map((session) => (
+              <article
+                className="rounded-3xl border border-border bg-white/72 p-4"
+                key={session.sessionId}
+              >
+                <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                  <div className="space-y-2">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Badge>{session.label}</Badge>
+                      <span
+                        className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${statusClassName(session.status)}`}
+                      >
+                        {statusLabel(session.status)}
+                      </span>
+                    </div>
+                    <p className="text-sm leading-6 text-muted">
+                      {session.observation}
+                    </p>
+                  </div>
+                  <div className="grid gap-2 text-xs text-muted sm:grid-cols-4 lg:min-w-[460px]">
+                    <span className="rounded-2xl bg-secondary/60 p-3">
+                      조작 {session.eventCount}
+                    </span>
+                    <span className="rounded-2xl bg-secondary/60 p-3">
+                      제출 {session.submitCount}
+                    </span>
+                    <span className="rounded-2xl bg-secondary/60 p-3">
+                      힌트 {session.hintCount}
+                    </span>
+                    <span className="rounded-2xl bg-secondary/60 p-3">
+                      재시도 {session.retryCount}
+                    </span>
+                  </div>
+                </div>
+                <div className="mt-4 grid gap-3 text-sm leading-6 text-muted md:grid-cols-3">
+                  <p className="rounded-2xl bg-white/80 p-3">
+                    <span className="block text-xs font-semibold uppercase tracking-[0.14em] text-muted">
+                      주로 머문 활동
+                    </span>
+                    {session.topActivityTitle}
+                  </p>
+                  <p className="rounded-2xl bg-white/80 p-3">
+                    <span className="block text-xs font-semibold uppercase tracking-[0.14em] text-muted">
+                      마지막 기록
+                    </span>
+                    {formatReportDate(session.lastEventAt ?? session.latestEventAt)}
+                  </p>
+                  <p className="rounded-2xl bg-white/80 p-3">
+                    <span className="block text-xs font-semibold uppercase tracking-[0.14em] text-muted">
+                      마지막 응답
+                    </span>
+                    {session.lastResponse ?? "아직 제출 응답 없음"}
+                  </p>
+                </div>
+              </article>
+            ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function ActivitySummaryBoard({
+  activities,
+}: {
+  activities: TeacherReportSummary["activitySummaries"];
+}) {
+  return (
+    <Card className="overflow-hidden rounded-[1.75rem]">
+      <CardHeader className="space-y-3">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted">
+              활동별 로그
+            </p>
+            <CardTitle className="mt-2">어느 블록에서 무엇이 쌓였는가</CardTitle>
+          </div>
+          <div className="grid size-11 place-items-center rounded-2xl bg-accent/15 text-accent-foreground">
+            <ListChecks className="size-5" />
+          </div>
+        </div>
+        <p className="max-w-3xl text-sm leading-6 text-muted">
+          HTML 자료 안의 각 블록을 기준으로 조작, 제출, 힌트, 재시도, 완료를
+          다시 묶었습니다. 다음 수업에서 어느 장면을 다시 보여줄지 고르기 위한 보드입니다.
+        </p>
+      </CardHeader>
+      <CardContent>
+        <div className="grid gap-3 lg:grid-cols-2">
+          {activities.map((activity) => (
+            <article
+              className="rounded-3xl border border-border bg-white/72 p-4"
+              key={activity.activityId}
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <Badge>{blockTypeLabel(activity.blockType)}</Badge>
+                  <h3 className="mt-3 text-lg font-semibold tracking-tight text-foreground">
+                    {activity.title}
+                  </h3>
+                </div>
+                <div className="grid size-10 place-items-center rounded-2xl bg-primary/10 text-primary">
+                  <Activity className="size-4" />
+                </div>
+              </div>
+              <p className="mt-3 text-sm leading-6 text-muted">
+                {activity.summary}
+              </p>
+              <div className="mt-4 grid grid-cols-3 gap-2 text-xs text-muted">
+                <span className="rounded-2xl bg-secondary/60 p-3">
+                  세션 {activity.sessionCount}
+                </span>
+                <span className="rounded-2xl bg-secondary/60 p-3">
+                  제출 {activity.submitCount}
+                </span>
+                <span className="rounded-2xl bg-secondary/60 p-3">
+                  오답 {activity.incorrectSubmitCount}
+                </span>
+                <span className="rounded-2xl bg-secondary/60 p-3">
+                  힌트 {activity.hintCount}
+                </span>
+                <span className="rounded-2xl bg-secondary/60 p-3">
+                  재시도 {activity.retryCount}
+                </span>
+                <span className="rounded-2xl bg-secondary/60 p-3">
+                  완료 {activity.completeCount}
+                </span>
+              </div>
+              <p className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-900">
+                {activity.nextAction}
+              </p>
+            </article>
+          ))}
+        </div>
       </CardContent>
     </Card>
   );
@@ -143,12 +374,25 @@ export function TeacherReportView({ report }: TeacherReportViewProps) {
                     참여 코드 {report.code}
                   </Badge>
                 </div>
-                <GuidedTour
-                  className="border-white/20 bg-white/10 text-white hover:bg-white/20"
-                  startLabel="리포트 읽는 법"
-                  steps={teacherReportTourSteps}
-                  storageKey="mathpro:tour:teacher-report"
-                />
+                <div className="flex flex-wrap items-center gap-2">
+                  <Button
+                    asChild
+                    className="border-white/20 bg-white/10 text-white hover:bg-white/20"
+                    size="sm"
+                    variant="secondary"
+                  >
+                    <Link href={`/?reuseAssignmentId=${report.assignmentId}` as Route}>
+                      다시 수정해서 쓰기
+                    </Link>
+                  </Button>
+                  <GuidedTour
+                    autoOpen
+                    className="border-white/20 bg-white/10 text-white hover:bg-white/20"
+                    startLabel="리포트 읽는 법"
+                    steps={teacherReportTourSteps}
+                    storageKey="mathpro:tour:teacher-report"
+                  />
+                </div>
               </div>
               <div>
                 <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
@@ -224,6 +468,11 @@ export function TeacherReportView({ report }: TeacherReportViewProps) {
             title="다음 수업에서 무엇을 보완할 것인가"
             tone="bg-lime-100 text-lime-900"
           />
+        </section>
+
+        <section className="grid gap-6">
+          <StudentSessionBoard sessions={report.sessionDetails} />
+          <ActivitySummaryBoard activities={report.activitySummaries} />
         </section>
       </Container>
     </main>

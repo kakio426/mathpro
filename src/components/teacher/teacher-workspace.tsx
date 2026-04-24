@@ -11,7 +11,6 @@ import {
   ExternalLink,
   FileCode2,
   MonitorPlay,
-  Play,
   QrCode,
   Send,
   ShieldAlert,
@@ -23,11 +22,17 @@ import { useState, type FormEvent } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { AssignmentShareCard } from "@/components/teacher/assignment-share-card";
+import { TeacherHelpGlossary } from "@/components/teacher/teacher-help-glossary";
 import {
   GuidedTour,
   type GuidedTourStep,
 } from "@/components/onboarding/guided-tour";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  createDraftRequestFromTemplate,
+  teacherHtmlTemplates,
+} from "@/features/teacher/html-templates";
 import type {
   CreateTeacherDraftRequest,
   PublishedAssignment,
@@ -42,84 +47,17 @@ type PublishResponse = {
   assignment: PublishedAssignment;
 };
 
-const sampleDraft: CreateTeacherDraftRequest = {
-  gradeBand: "3-4",
-  concept: "분수의 의미",
-  goal: "전체를 같은 크기로 나눈 것 중 일부라는 분수의 의미를 조작으로 설명한다.",
-  interactionKind: "html-artifact",
-  difficulty: "standard",
-  sourceLessonSlug: "whole-and-part",
+export type TeacherWorkspaceReuseSource = {
+  assignmentId: string;
+  code: string;
+  title: string;
+  document: TeacherActivityDocument;
 };
 
-const sampleHtmlArtifact = `<!doctype html>
-<html lang="ko">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <style>
-    body { margin: 0; font-family: system-ui, sans-serif; background: #f8fafc; color: #172554; }
-    main { max-width: 760px; margin: 0 auto; padding: 24px; }
-    button { border: 1px solid #0f766e; border-radius: 8px; background: white; padding: 14px; cursor: pointer; }
-    .bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 24px 0; }
-    .piece.selected { background: #5eead4; }
-  </style>
-</head>
-<body>
-  <main>
-    <h1>분수 막대 만들기</h1>
-    <p>초코바 1개를 4등분했다고 생각하고 2칸을 골라 2/4를 만들어 보세요.</p>
-    <div class="bar">
-      <button class="piece" data-index="0">1</button>
-      <button class="piece" data-index="1">2</button>
-      <button class="piece" data-index="2">3</button>
-      <button class="piece" data-index="3">4</button>
-    </div>
-    <button id="submit">제출하기</button>
-    <button id="complete">활동 완료</button>
-    <p id="feedback"></p>
-  </main>
-  <script>
-    const selected = new Set();
-    const send = (eventType, payload) => {
-      window.parent.postMessage({
-        source: "mathpro-html-activity",
-        type: eventType,
-        eventType,
-        blockId: "fraction-bar-html",
-        payload
-      }, "*");
-    };
-
-    send("ready", { title: "분수 막대 만들기" });
-
-    document.querySelectorAll(".piece").forEach((button) => {
-      button.addEventListener("click", () => {
-        const index = Number(button.dataset.index);
-        selected.has(index) ? selected.delete(index) : selected.add(index);
-        button.classList.toggle("selected");
-        send("select", { selectedParts: Array.from(selected).sort() });
-      });
-    });
-
-    document.querySelector("#submit").addEventListener("click", () => {
-      const answer = Array.from(selected).sort().join(",");
-      const isCorrect = answer === "0,1";
-      document.querySelector("#feedback").textContent = isCorrect
-        ? "좋아요. 4조각 중 2조각을 골랐어요."
-        : "전체를 4등분했는지, 몇 조각을 골랐는지 다시 확인해 보세요.";
-      send("submit", {
-        isCorrect,
-        response: Array.from(selected).sort(),
-        misconceptionSignal: isCorrect ? null : "selected-parts-mismatch"
-      });
-    });
-
-    document.querySelector("#complete").addEventListener("click", () => {
-      send("complete", { isCorrect: true });
-    });
-  </script>
-</body>
-</html>`;
+type TeacherWorkspaceProps = {
+  reuseSource?: TeacherWorkspaceReuseSource | null;
+  reuseLoadError?: string | null;
+};
 
 const navItems = [
   { label: "자료 만들기", href: "/" as Route, icon: Wand2, active: true },
@@ -219,6 +157,42 @@ function buildGeminiPrompt(form: CreateTeacherDraftRequest) {
   ].join("\n");
 }
 
+function findHtmlArtifactBlock(document: TeacherActivityDocument) {
+  return document.blocks.find((block) => block.type === "html-artifact" && block.html);
+}
+
+function createInitialForm(
+  reuseSource: TeacherWorkspaceReuseSource | null,
+): CreateTeacherDraftRequest {
+  if (!reuseSource) {
+    const draft = createDraftRequestFromTemplate(teacherHtmlTemplates[0]);
+
+    return {
+      ...draft,
+      promptTemplate: buildGeminiPrompt(draft),
+    };
+  }
+
+  const sourceDocument = reuseSource.document;
+  const htmlBlock = findHtmlArtifactBlock(sourceDocument);
+  const fallbackDraft = createDraftRequestFromTemplate(teacherHtmlTemplates[0]);
+  const nextForm: CreateTeacherDraftRequest = {
+    gradeBand: sourceDocument.gradeBand,
+    concept: sourceDocument.concept,
+    goal: sourceDocument.goal,
+    interactionKind: htmlBlock?.interactionKind ?? "html-artifact",
+    difficulty: sourceDocument.difficulty,
+    sourceLessonSlug: sourceDocument.sourceLessonSlug,
+    html: htmlBlock?.html ?? fallbackDraft.html,
+    promptTemplate: htmlBlock?.promptTemplate,
+  };
+
+  return {
+    ...nextForm,
+    promptTemplate: nextForm.promptTemplate ?? buildGeminiPrompt(nextForm),
+  };
+}
+
 function safetyStatusLabel(status: NonNullable<TeacherActivityDocument["blocks"][number]["safetyStatus"]>) {
   switch (status) {
     case "passed":
@@ -280,12 +254,13 @@ async function parseApiJson<T>(response: Response, fallbackMessage: string) {
   return payload as T;
 }
 
-export function TeacherWorkspace() {
-  const [form, setForm] = useState<CreateTeacherDraftRequest>({
-    ...sampleDraft,
-    html: sampleHtmlArtifact,
-    promptTemplate: buildGeminiPrompt(sampleDraft),
-  });
+export function TeacherWorkspace({
+  reuseSource = null,
+  reuseLoadError = null,
+}: TeacherWorkspaceProps) {
+  const [form, setForm] = useState<CreateTeacherDraftRequest>(() =>
+    createInitialForm(reuseSource),
+  );
   const [document, setDocument] = useState<TeacherActivityDocument | null>(null);
   const [assignment, setAssignment] = useState<PublishedAssignment | null>(null);
   const [status, setStatus] = useState<"idle" | "drafting" | "publishing">(
@@ -364,6 +339,18 @@ export function TeacherWorkspace() {
     }
   }
 
+  function handleApplyTemplate(template: (typeof teacherHtmlTemplates)[number]) {
+    const nextForm = createDraftRequestFromTemplate(template);
+
+    setForm({
+      ...nextForm,
+      promptTemplate: buildGeminiPrompt(nextForm),
+    });
+    setDocument(null);
+    setAssignment(null);
+    setError(null);
+  }
+
   return (
     <main className="relative isolate min-h-[calc(100vh-8rem)] overflow-hidden">
       <div
@@ -393,6 +380,7 @@ export function TeacherWorkspace() {
                   Gemini 같은 AI에서 만든 움직이는 자료를 붙여넣고, 안전한 미리보기로 확인한 뒤 참여 코드로 배포합니다.
                 </p>
                 <GuidedTour
+                  autoOpen
                   className="border-white/20 bg-white/10 text-white hover:bg-white/20"
                   startLabel="처음 사용하는 선생님 안내"
                   steps={teacherWorkspaceTourSteps}
@@ -412,6 +400,36 @@ export function TeacherWorkspace() {
             </div>
           </div>
         </section>
+
+        {reuseSource ? (
+          <section className="mb-5 rounded-[1.5rem] border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm leading-6 text-emerald-900 shadow-card">
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+              <div>
+                <p className="font-semibold">불러온 자료로 다시 만들기</p>
+                <p className="mt-1">
+                  `{reuseSource.title}` 자료를 편집 가능한 원본으로 불러왔습니다.
+                  필요한 부분을 수정한 뒤 <strong>자료 문서 만들기</strong>를 누르면
+                  새 발행본으로 다시 배포할 수 있습니다.
+                </p>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge className="border-emerald-300 bg-white/70 text-emerald-900">
+                  원본 코드 {reuseSource.code}
+                </Badge>
+                <Button asChild size="sm" variant="secondary">
+                  <Link href={"/" as Route}>새 자료로 시작</Link>
+                </Button>
+              </div>
+            </div>
+          </section>
+        ) : null}
+
+        {reuseLoadError ? (
+          <section className="mb-5 rounded-[1.5rem] border border-amber-200 bg-amber-50 px-5 py-4 text-sm leading-6 text-amber-900 shadow-card">
+            <p className="font-semibold">기존 자료를 불러오지 못했어요.</p>
+            <p className="mt-1">{reuseLoadError}</p>
+          </section>
+        ) : null}
 
         <form
           className="grid gap-5 xl:grid-cols-[320px_minmax(420px,1fr)_410px]"
@@ -555,6 +573,60 @@ export function TeacherWorkspace() {
                 </div>
               </div>
             </section>
+
+            <section className="rounded-[1.5rem] border border-border bg-white/80 p-4 shadow-card">
+              <div className="mb-4 flex items-center gap-2">
+                <Blocks className="size-4 text-primary" />
+                <div>
+                  <h2 className="font-semibold tracking-tight">
+                    바로 쓸 수 있는 예시
+                  </h2>
+                  <p className="mt-1 text-xs leading-5 text-muted">
+                    수업 의도에 가까운 예시를 고르면 목표와 자료 원본이 함께 채워집니다.
+                  </p>
+                </div>
+              </div>
+              <div className="grid gap-2">
+                {teacherHtmlTemplates.map((template) => {
+                  const isActive = form.html === template.html;
+
+                  return (
+                    <button
+                      aria-label={`${template.title} 예시 넣기`}
+                      className={`rounded-2xl border p-3 text-left transition hover:-translate-y-0.5 hover:shadow-card ${
+                        isActive
+                          ? "border-primary bg-teal-50 text-primary"
+                          : "border-border bg-white text-foreground hover:border-primary/35"
+                      }`}
+                      key={template.id}
+                      type="button"
+                      onClick={() => handleApplyTemplate(template)}
+                    >
+                      <span className="flex items-center justify-between gap-3">
+                        <span className="text-sm font-semibold">
+                          {template.title}
+                        </span>
+                        <Badge
+                          className={
+                            isActive
+                              ? "border-primary/20 bg-white text-primary"
+                              : undefined
+                          }
+                          variant={isActive ? "default" : "accent"}
+                        >
+                          {isActive ? "선택됨" : "예시 넣기"}
+                        </Badge>
+                      </span>
+                      <span className="mt-1 block text-xs leading-5 text-muted">
+                        {template.description}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </section>
+
+            <TeacherHelpGlossary />
 
             <section className="rounded-[1.5rem] border border-border bg-[#fff6dd] p-4 shadow-card">
               <div className="mb-3 flex items-center justify-between gap-3">
@@ -762,44 +834,26 @@ export function TeacherWorkspace() {
             </section>
 
             {assignment ? (
-              <section className="rounded-[1.5rem] border border-primary/25 bg-[#12312e] p-5 text-white shadow-card">
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <p className="text-xs font-semibold tracking-[0.16em] text-teal-100/70 uppercase">
-                      참여 코드
-                    </p>
-                    <p className="mt-2 font-mono text-4xl font-semibold tracking-[0.14em]">
-                      {assignment.code}
-                    </p>
+              <div className="space-y-3">
+                <AssignmentShareCard
+                  code={assignment.code}
+                  shareUrl={assignment.shareUrl}
+                  title="발행 완료"
+                  tone="dark"
+                />
+                <section className="rounded-[1.5rem] border border-primary/25 bg-[#12312e] p-4 text-white shadow-card">
+                  <div className="flex items-center gap-2 text-sm text-teal-50/80">
+                    <CheckCircle2 className="size-4 text-emerald-200" />
+                    발행이 끝났습니다. QR, 코드, 링크 중 편한 방식으로 학생에게 공유하세요.
                   </div>
-                  <CheckCircle2 className="size-6 text-emerald-200" />
-                </div>
-                <div className="mt-5 grid gap-2 sm:grid-cols-3 xl:grid-cols-1">
-                  <Button
-                    className="bg-white text-[#12312e] hover:bg-teal-50"
-                    type="button"
-                    variant="secondary"
-                    onClick={() => {
-                      void navigator.clipboard?.writeText(assignment.shareUrl);
-                    }}
-                  >
-                    <Copy className="size-4" />
-                    링크 복사
-                  </Button>
-                  <Button asChild>
-                    <Link href={`/play/${assignment.code}` as Route}>
-                      <Play className="size-4" />
-                      학생 화면
-                    </Link>
-                  </Button>
                   <Button asChild variant="secondary">
                     <Link href={`/teacher/assignments/${assignment.id}` as Route}>
                       <ExternalLink className="size-4" />
                       결과 보기
                     </Link>
                   </Button>
-                </div>
-              </section>
+                </section>
+              </div>
             ) : (
               <section className="rounded-[1.5rem] border border-border bg-white/70 p-5 shadow-card">
                 <div className="flex items-start gap-3">

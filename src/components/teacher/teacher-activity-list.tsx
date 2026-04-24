@@ -10,7 +10,7 @@ import {
   Users,
 } from "lucide-react";
 import { Container } from "@/components/layout/container";
-import { CopyShareLinkButton } from "@/components/teacher/copy-share-link-button";
+import { AssignmentShareCard } from "@/components/teacher/assignment-share-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -227,6 +227,12 @@ export function TeacherActivityList({
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
+                  <AssignmentShareCard
+                    code={assignment.code}
+                    compact
+                    shareUrl={assignment.shareUrl}
+                    title="교실 공유"
+                  />
                   <div className="grid gap-3 text-sm leading-6 text-muted md:grid-cols-[1fr_1fr_auto] md:items-center">
                     <p className="rounded-2xl bg-white/70 px-4 py-3">
                       <span className="block text-xs font-semibold tracking-[0.14em] text-muted uppercase">
@@ -242,7 +248,14 @@ export function TeacherActivityList({
                       {formatPublishedDate(assignment.publishedAt)}
                     </p>
                     <div className="flex flex-wrap gap-2">
-                      <CopyShareLinkButton shareUrl={assignment.shareUrl} />
+                      <Button asChild variant="secondary">
+                        <Link
+                          href={`/?reuseAssignmentId=${assignment.id}` as Route}
+                        >
+                          <FilePlus2 className="size-4" />
+                          복제해서 수정
+                        </Link>
+                      </Button>
                       <Button asChild variant="secondary">
                         <Link href={`/play/${assignment.code}` as Route}>
                           <MonitorPlay className="size-4" />

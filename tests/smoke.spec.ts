@@ -77,6 +77,15 @@ async function mockLessonSession(
   });
 }
 
+async function dismissAutoGuideIfVisible(page: Page) {
+  const dialog = page.getByRole("dialog");
+
+  if (await dialog.isVisible({ timeout: 1000 }).catch(() => false)) {
+    await page.keyboard.press("Escape");
+    await expect(dialog).toBeHidden();
+  }
+}
+
 test("whole-and-part lesson runs end-to-end and redirects to report", async ({ page }) => {
   await mockLessonSession(page, {
     sessionId: "session-whole",
@@ -204,6 +213,7 @@ test("teacher creates a draft and publishes an assignment code", async ({ page }
   });
 
   await page.goto("/");
+  await dismissAutoGuideIfVisible(page);
 
   await expect(
     page.getByRole("heading", { name: "AI로 만든 움직이는 수업자료" }),
@@ -287,6 +297,7 @@ test("HTML artifact play route stores iframe events and completes through the br
   });
 
   await page.goto("/play/HTML01");
+  await dismissAutoGuideIfVisible(page);
 
   await expect(
     page.getByRole("heading", { name: "분수 막대 조작 자료" }),

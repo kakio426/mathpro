@@ -50,6 +50,9 @@ describe("createTeacherReportSummary", () => {
         {
           id: "session-1",
           status: "completed",
+          startedAt: "2026-04-24T00:00:00.000Z",
+          completedAt: "2026-04-24T00:00:25.000Z",
+          latestEventAt: "2026-04-24T00:00:25.000Z",
         },
       ],
       events: [
@@ -79,14 +82,41 @@ describe("createTeacherReportSummary", () => {
     expect(summary.participantCount).toBe(1);
     expect(summary.completedCount).toBe(1);
     expect(summary.eventCount).toBe(2);
-    expect(summary.manipulationPatterns[0]).toContain("분수 막대 HTML 자료");
-    expect(summary.manipulationPatterns[0]).toContain("1개 세션");
-    expect(summary.manipulationPatterns[0]).toContain("오답 제출은 1회");
-    expect(summary.manipulationPatterns[0]).toContain("마지막 응답 예: 0");
-    expect(summary.dwellPatterns[0]).toContain("15초 이상");
-    expect(summary.misconceptionSignals[0]).toContain("분수 막대 HTML 자료");
-    expect(summary.misconceptionSignals[0]).toContain("selected-parts-mismatch");
-    expect(summary.nextTeachingMoves[0]).toContain("다음 수업");
+    expect(summary.manipulationPatterns[0]).toContain("분수 막대 자료");
+    expect(summary.manipulationPatterns[0]).toContain("학생 1명");
+    expect(summary.manipulationPatterns[0]).toContain("맞지 않은 제출이 1번");
+    expect(summary.manipulationPatterns[0]).toContain('마지막 응답은 "0"');
+    expect(summary.dwellPatterns[0]).toContain("15초 이상 머문 학생이 1명");
+    expect(summary.misconceptionSignals[0]).toContain("분수 막대 자료");
+    expect(summary.misconceptionSignals[0]).toContain(
+      "선택한 조각 수와 목표 분수가 맞지 않음",
+    );
+    expect(summary.misconceptionSignals[0]).not.toContain(
+      "selected-parts-mismatch",
+    );
+    expect(summary.nextTeachingMoves[0]).toContain("가장 많이 만진 장면");
+    expect(summary.sessionDetails[0]).toMatchObject({
+      label: "참여자 1",
+      status: "completed",
+      eventCount: 2,
+      submitCount: 1,
+      incorrectSubmitCount: 1,
+      topActivityTitle: "분수 막대 HTML 자료",
+      lastResponse: "0",
+    });
+    expect(summary.sessionDetails[0]?.observation).toContain(
+      "맞지 않은 제출이 1번",
+    );
+    expect(summary.activitySummaries[0]).toMatchObject({
+      title: "분수 막대 HTML 자료",
+      eventCount: 2,
+      sessionCount: 1,
+      submitCount: 1,
+      incorrectSubmitCount: 1,
+    });
+    expect(summary.activitySummaries[0]?.nextAction).toContain(
+      "무엇을 기준으로 골랐니?",
+    );
   });
 
   it("groups fallback misconception signals by activity block", () => {
@@ -133,11 +163,17 @@ describe("createTeacherReportSummary", () => {
     expect(summary.completedCount).toBe(1);
     expect(summary.misconceptionSignals).toEqual(
       expect.arrayContaining([
-        expect.stringContaining("분수 막대 HTML 자료: 제출에서 오답 신호 1회"),
-        expect.stringContaining("분수 막대 HTML 자료: 힌트 열람 1회"),
-        expect.stringContaining("분수 막대 HTML 자료: 재시도 1회"),
+        expect.stringContaining("분수 막대 자료에서 맞지 않은 제출이 1번"),
+        expect.stringContaining("분수 막대 자료에서 힌트를 연 기록이 1번"),
+        expect.stringContaining("분수 막대 자료에서 다시 시도한 기록이 1번"),
       ]),
     );
+    expect(summary.sessionDetails).toHaveLength(2);
+    expect(summary.sessionDetails[1]).toMatchObject({
+      label: "참여자 2",
+      hintCount: 1,
+      retryCount: 1,
+    });
   });
 
   it("returns helpful empty-state report copy before student events arrive", () => {
@@ -148,8 +184,15 @@ describe("createTeacherReportSummary", () => {
     });
 
     expect(summary.manipulationPatterns[0]).toContain("아직 학생 조작 이벤트");
-    expect(summary.dwellPatterns[0]).toContain("이벤트가 없습니다");
+    expect(summary.dwellPatterns[0]).toContain("학생 조작 기록");
     expect(summary.misconceptionSignals[0]).toContain("뚜렷한 오개념");
     expect(summary.nextTeachingMoves[0]).toContain("먼저");
+    expect(summary.sessionDetails).toEqual([]);
+    expect(summary.activitySummaries[0]).toMatchObject({
+      title: "분수 막대 HTML 자료",
+      eventCount: 0,
+      sessionCount: 0,
+    });
+    expect(summary.activitySummaries[0]?.summary).toContain("아직");
   });
 });

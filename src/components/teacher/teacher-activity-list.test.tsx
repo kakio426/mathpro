@@ -46,9 +46,13 @@ describe("TeacherActivityList", () => {
     expect(screen.getByText("분수 막대 조작 자료")).toBeInTheDocument();
     expect(screen.getByText("참여 4")).toBeInTheDocument();
     expect(screen.getByText("완료 3")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /학생 화면/ })).toHaveAttribute(
+    expect(screen.getAllByRole("link", { name: /학생 화면/ })[0]).toHaveAttribute(
       "href",
       "/play/ABC123",
+    );
+    expect(screen.getByRole("link", { name: /복제해서 수정/ })).toHaveAttribute(
+      "href",
+      "/?reuseAssignmentId=assignment-123",
     );
     expect(screen.getByRole("link", { name: /결과 보기/ })).toHaveAttribute(
       "href",

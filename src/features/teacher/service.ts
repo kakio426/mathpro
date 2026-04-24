@@ -80,6 +80,16 @@ export function createTeacherService({
       return assignment;
     },
 
+    async getAssignmentById(assignmentId: string): Promise<PublishedAssignment> {
+      const assignment = await teacherStore.findAssignmentById(assignmentId);
+
+      if (!assignment) {
+        throw notFound("Assignment not found.");
+      }
+
+      return assignment;
+    },
+
     async startAssignmentSession({
       code,
       cookieStore,

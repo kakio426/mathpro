@@ -48,6 +48,12 @@ npm run release:check
 
 ## Manual Smoke
 
+- 자동 확인이 필요하면 아래 명령으로 배포 URL에 실제 QA 데이터를 생성해 전체 흐름을 검사한다.
+
+```bash
+npm run qa:t6 -- --base-url https://your-app.vercel.app --confirm-write
+```
+
 - 홈에서 HTML 자료 문서를 만든다.
 - 안전 검사 통과/경고/차단 문구가 의도대로 보이는지 확인한다.
 - 자료를 발행하고 참여 코드를 확인한다.
@@ -55,3 +61,10 @@ npm run release:check
 - HTML 내부 조작 후 이벤트 로그가 갱신되는지 확인한다.
 - complete 후 `/report/[sessionId]`로 이동하는지 확인한다.
 - 교사 리포트 `/teacher/assignments/[assignmentId]`에서 4블록 요약이 보이는지 확인한다.
+
+## Field Test Docs
+
+- 실제 선생님 테스트 진행 대본: `docs/product/teacher-field-test-playbook.md`
+- AI 수업자료 제작 가이드: `docs/product/teacher-material-authoring-guide.md`
+- 교사용 용어 설명 기준: `docs/product/teacher-help-glossary.md`
+- 첫 방문 안내 모달 정책: `docs/product/onboarding-modal-policy.md`

@@ -98,7 +98,7 @@ const safetyRules: HtmlSafetyRule[] = [
     code: "top-navigation",
     severity: "blocked",
     pattern:
-      /\b(window\.)?(top|opener)\b|(?:parent|top|window)\.location\b|\blocation\.(href|assign|replace)\b|\b(?:window\.)?parent\.document\b/i,
+      /\bwindow\.(top|opener)\b|\bopener\b|(?:parent|top|window)\.location\b|\blocation\.(href|assign|replace)\b|\b(?:window\.)?(?:parent|top)\.document\b/i,
     message: "상위 창 제어 또는 강제 이동 코드는 허용하지 않습니다.",
   },
   {
@@ -125,7 +125,7 @@ function hasParentPostMessage(html: string) {
 }
 
 function hasCompleteEvent(html: string) {
-  return /eventType\s*:\s*["']complete["']|type\s*:\s*["']complete["']|mathproEvent\s*:\s*["']complete["']/i.test(
+  return /eventType\s*:\s*["']complete["']|type\s*:\s*["']complete["']|mathproEvent\s*:\s*["']complete["']|\b(?:send|emit|sendEvent|postMathproEvent)\s*\(\s*["']complete["']/i.test(
     html,
   );
 }
