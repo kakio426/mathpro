@@ -103,14 +103,6 @@ const safetyRules: HtmlSafetyRule[] = [
   },
 ];
 
-const allowedCdnScriptPrefixes = [
-  "https://cdnjs.cloudflare.com/ajax/libs/three.js/",
-  "https://cdn.jsdelivr.net/npm/three@",
-  "https://cdnjs.cloudflare.com/ajax/libs/p5.js/",
-  "https://cdn.jsdelivr.net/npm/p5@",
-  "https://cdn.tailwindcss.com",
-];
-
 function hasMathproPostMessageSource(html: string) {
   return /source\s*:\s*["']mathpro-html-activity["']/i.test(html);
 }
@@ -125,10 +117,6 @@ function hasCompleteEvent(html: string) {
   );
 }
 
-function isAllowedCdnScript(url: string) {
-  return allowedCdnScriptPrefixes.some((prefix) => url.startsWith(prefix));
-}
-
 function createExternalResourceIssues(html: string): HtmlSafetyIssue[] {
   const issues: HtmlSafetyIssue[] = [];
   const attrPattern =
@@ -136,20 +124,15 @@ function createExternalResourceIssues(html: string): HtmlSafetyIssue[] {
 
   for (const match of html.matchAll(attrPattern)) {
     const tagName = match[1]?.toLowerCase() ?? "";
-    const attribute = match[2]?.toLowerCase() ?? "";
     const url = match[3]?.trim() ?? "";
-
-    if (tagName === "script" && attribute === "src" && isAllowedCdnScript(url)) {
-      continue;
-    }
 
     issues.push({
       code: tagName === "script" ? "external-script" : "external-resource",
-      severity: "blocked",
+      severity: "warning",
       message:
-        tagName === "img" || attribute === "poster" || attribute === "data"
-          ? "외부 이미지는 사용할 수 없습니다. CSS 도형, SVG, 텍스트 라벨로 표현해 주세요."
-          : "허용 목록 밖의 외부 리소스는 차단합니다. Three.js, p5.js, Tailwind CDN만 제한적으로 사용할 수 있습니다.",
+        tagName === "script"
+          ? `외부 라이브러리를 불러옵니다: ${url}. 수업 환경에서 인터넷 연결이 필요할 수 있습니다.`
+          : `외부 자료를 불러옵니다: ${url}. 수업 환경에서 인터넷 연결이 필요할 수 있습니다.`,
     });
   }
 
@@ -159,9 +142,9 @@ function createExternalResourceIssues(html: string): HtmlSafetyIssue[] {
   if (cssExternalPattern.test(html)) {
     issues.push({
       code: "external-resource",
-      severity: "blocked",
+      severity: "warning",
       message:
-        "외부 CSS나 이미지 URL은 사용할 수 없습니다. 필요한 표현은 HTML 내부 CSS/SVG로 작성해 주세요.",
+        "외부 CSS나 이미지 URL을 불러옵니다. 수업 환경에서 인터넷 연결이 필요할 수 있습니다.",
     });
   }
 

@@ -138,6 +138,8 @@ test("whole-and-part lesson runs end-to-end and redirects to report", async ({ p
 
 test("teacher creates a draft and publishes an assignment code", async ({ page }) => {
   const now = "2026-04-24T00:00:00.000Z";
+  let draftRequest: Record<string, unknown> | null = null;
+  let publishRequest: unknown = null;
   const document = {
     id: "draft-e2e",
     title: "분수의 의미 인터랙티브 탐구",
@@ -183,14 +185,24 @@ test("teacher creates a draft and publishes an assignment code", async ({ page }
   };
 
   await page.route("**/api/teacher/activities/draft", async (route) => {
+    draftRequest = route.request().postDataJSON() as Record<string, unknown>;
     await route.fulfill({
       status: 200,
       contentType: "application/json",
-      body: JSON.stringify({ document }),
+      body: JSON.stringify({
+        document: {
+          ...document,
+          creatorName: draftRequest.creatorName,
+        },
+      }),
     });
   });
 
   await page.route("**/api/teacher/activities/publish", async (route) => {
+    publishRequest = route.request().postDataJSON();
+    const publishPayload = publishRequest as {
+      document?: Record<string, unknown>;
+    };
     await route.fulfill({
       status: 201,
       contentType: "application/json",
@@ -205,6 +217,7 @@ test("teacher creates a draft and publishes an assignment code", async ({ page }
           document: {
             ...document,
             id: "activity-e2e",
+            creatorName: publishPayload.document?.creatorName,
             status: "published",
           },
         },
@@ -255,11 +268,30 @@ test("teacher creates a draft and publishes an assignment code", async ({ page }
   await page.getByRole("button", { name: "미리보기로 가져오기" }).click();
   await expect(page.getByText("수업에서 이렇게 활용하세요")).toBeVisible();
   await expect(page.getByText("학습 질문")).toBeVisible();
+  await page
+    .getByLabel("공유 자료실 표시 이름")
+    .fill("김수학 선생님");
   await page.getByRole("button", { name: /발행 준비하기/ }).click();
   await expect(page.getByText("직접 만져보는 탐구")).toBeVisible();
   await page.getByRole("button", { name: /참여 코드 만들기/ }).click();
+  expect(draftRequest).toMatchObject({
+    creatorName: "김수학 선생님",
+  });
+  expect(
+    (publishRequest as { document?: Record<string, unknown> } | null)?.document
+      ?.creatorName,
+  ).toBe("김수학 선생님");
   await expect(page.getByText("ABC123")).toBeVisible();
-  await expect(page.getByRole("link", { name: /학생 화면/ })).toHaveAttribute(
+  await expect(page.getByText("내 자료에 저장됐습니다")).toBeVisible();
+  await expect(page.getByRole("link", { name: /공유 자료실 보기/ })).toHaveAttribute(
+    "href",
+    "/library",
+  );
+  await expect(page.getByRole("link", { name: /내 자료에서 보기/ })).toHaveAttribute(
+    "href",
+    "/teacher/activities/assignment-e2e",
+  );
+  await expect(page.locator('a[href="/play/ABC123"]').first()).toHaveAttribute(
     "href",
     "/play/ABC123",
   );

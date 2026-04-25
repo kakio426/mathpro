@@ -12,12 +12,6 @@ export type ParsedAiMaterialOutput = {
   rawText: string;
 };
 
-const allowedCdnGuide = [
-  "Three.js: cdnjs.cloudflare.com 또는 cdn.jsdelivr.net",
-  "p5.js: cdnjs.cloudflare.com 또는 cdn.jsdelivr.net",
-  "Tailwind CDN: cdn.tailwindcss.com",
-].join("\n- ");
-
 export function buildEducationalSimulationPrompt(
   input: EducationalSimulationPromptInput,
 ) {
@@ -47,10 +41,9 @@ export function buildEducationalSimulationPrompt(
     "- 수치 비교나 단위 감각이 필요한 경우 실제적인 기준과 비율을 코드 안에 반영해 왜곡을 줄입니다.",
     "",
     "[CDN / 이미지 정책]",
-    "- 외부 이미지는 사용하지 말고 CSS 도형, SVG, 텍스트 라벨, 단위 스케일로 표현합니다.",
-    "- CDN은 아래 허용 목록만 사용할 수 있습니다.",
-    `- ${allowedCdnGuide}`,
-    "- 그 외 CDN, 외부 이미지, 외부 CSS, 외부 링크 리소스는 사용하지 않습니다.",
+    "- Three.js, p5.js, Tailwind 같은 공개 CDN은 필요하면 사용할 수 있습니다.",
+    "- 단, 수업 중 인터넷 연결이 불안정해도 핵심 학습이 가능하도록 중요한 시각 요소는 가능하면 HTML 내부 CSS/SVG/텍스트 라벨로 표현합니다.",
+    "- 외부 이미지를 꼭 쓰는 경우에도 학생 개인정보 입력, 추적, 외부 전송 기능은 넣지 않습니다.",
     "",
     "[금지 항목]",
     "- fetch, XMLHttpRequest, WebSocket, EventSource, sendBeacon",

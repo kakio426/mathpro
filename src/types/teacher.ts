@@ -85,6 +85,7 @@ export const teacherActivityDocumentSchema = z.object({
   goal: z.string().min(1),
   difficulty: teacherDifficultySchema,
   sourceLessonSlug: z.string().min(1),
+  creatorName: z.string().trim().min(1).optional(),
   teacherGuide: z.string().min(1).optional(),
   learningQuestions: z.array(z.string().min(1)).max(3).optional(),
   aiOutputRaw: z.string().min(1).optional(),
@@ -104,6 +105,15 @@ export const createTeacherDraftRequestSchema = z.object({
   interactionKind: interactiveBlockKindSchema.default("fraction-bars"),
   difficulty: teacherDifficultySchema.default("standard"),
   sourceLessonSlug: z.string().min(1).default("whole-and-part"),
+  creatorName: z
+    .preprocess(
+      (value) =>
+        typeof value === "string" && value.trim().length === 0
+          ? undefined
+          : value,
+      z.string().trim().min(1).optional(),
+    )
+    .optional(),
   html: z.string().min(1).optional(),
   promptTemplate: z.string().min(1).optional(),
   teacherGuide: z.string().min(1).optional(),
@@ -145,6 +155,11 @@ export const publishedAssignmentListItemSchema = z.object({
   gradeBand: gradeBandSchema,
   difficulty: teacherDifficultySchema,
   sourceLessonSlug: z.string().min(1),
+  creatorName: z.string().trim().min(1).optional(),
+  teacherGuide: z.string().min(1).optional(),
+  learningQuestions: z.array(z.string().min(1)).max(3).optional(),
+  hasHtmlArtifact: z.boolean(),
+  previewBlockTitle: z.string().min(1).optional(),
   blockCount: z.number().int().nonnegative(),
   participantCount: z.number().int().nonnegative(),
   completedCount: z.number().int().nonnegative(),

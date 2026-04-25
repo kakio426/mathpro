@@ -26,8 +26,9 @@ describe("buildEducationalSimulationPrompt", () => {
     expect(prompt).toContain("재생/일시정지");
     expect(prompt).toContain("배속 조절");
     expect(prompt).toContain("window.parent.postMessage");
-    expect(prompt).toContain("cdn.tailwindcss.com");
-    expect(prompt).toContain("외부 이미지는 사용하지");
+    expect(prompt).toContain("공개 CDN은 필요하면 사용할 수 있습니다");
+    expect(prompt).toContain("핵심 학습이 가능하도록");
+    expect(prompt).not.toContain("허용 목록만");
   });
 });
 

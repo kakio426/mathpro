@@ -5,6 +5,7 @@ import {
   BarChart3,
   CalendarDays,
   ClipboardList,
+  Eye,
   FilePlus2,
   MonitorPlay,
   Users,
@@ -208,12 +209,39 @@ export function TeacherActivityList({
                         <p className="mt-2 max-w-3xl text-sm leading-7 text-muted">
                           {assignment.goal}
                         </p>
+                        <p className="mt-2 inline-flex items-center gap-2 rounded-full bg-white/72 px-3 py-1 text-xs font-semibold text-muted">
+                          <Users className="size-3.5 text-primary" />
+                          만든 선생님{" "}
+                          {assignment.creatorName ?? "수학프로 선생님"}
+                        </p>
+                        {assignment.teacherGuide ? (
+                          <p className="mt-3 rounded-2xl bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-950">
+                            <span className="mb-1 block text-xs font-semibold tracking-[0.14em] text-amber-700 uppercase">
+                              수업 활용
+                            </span>
+                            {assignment.teacherGuide}
+                          </p>
+                        ) : null}
+                        {assignment.learningQuestions?.length ? (
+                          <div className="mt-3 grid gap-2 rounded-2xl bg-teal-50 px-4 py-3 text-sm leading-6 text-primary">
+                            <span className="text-xs font-semibold tracking-[0.14em] text-primary/70 uppercase">
+                              학습 질문
+                            </span>
+                            {assignment.learningQuestions
+                              .slice(0, 2)
+                              .map((question) => (
+                                <p key={question}>- {question}</p>
+                              ))}
+                          </div>
+                        ) : null}
                       </div>
                     </div>
                     <div className="grid gap-2 rounded-2xl bg-secondary/60 p-4 text-sm text-muted sm:grid-cols-3 lg:min-w-[360px]">
                       <span className="flex items-center gap-2">
                         <ClipboardList className="size-4 text-primary" />
-                        {assignment.blockCount}개 블록
+                        {assignment.hasHtmlArtifact
+                          ? assignment.previewBlockTitle ?? "미리보기 가능"
+                          : `${assignment.blockCount}개 블록`}
                       </span>
                       <span className="flex items-center gap-2">
                         <Users className="size-4 text-primary" />
@@ -257,9 +285,17 @@ export function TeacherActivityList({
                         </Link>
                       </Button>
                       <Button asChild variant="secondary">
+                        <Link
+                          href={`/teacher/activities/${assignment.id}` as Route}
+                        >
+                          <Eye className="size-4" />
+                          자료 보기
+                        </Link>
+                      </Button>
+                      <Button asChild variant="secondary">
                         <Link href={`/play/${assignment.code}` as Route}>
                           <MonitorPlay className="size-4" />
-                          학생 화면
+                          학생 참여 화면
                         </Link>
                       </Button>
                       <Button asChild>

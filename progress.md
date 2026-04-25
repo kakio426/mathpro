@@ -32,12 +32,14 @@
 | `H9 제작실 단순화` | done | 첫 화면을 주제 입력 중심으로 바꾸고, AI 결과 원본/기술 용어는 기본 화면에서 숨김 |
 | `H10 제작실 마법사화` | done | 원본 붙여넣기를 메인에서 제거하고 `AI 결과 가져오기` 모달로 이동해 첫 화면을 주제 입력형으로 고정 |
 | `H11 교육공학형 프롬프트/결과 파싱` | done | 주제 한 줄로 엘리트 에듀테크 교사형 요청문을 만들고, Gemini 답변 전체에서 교사용 한 줄/HTML/학습 질문을 자동 분리 |
+| `H12 내 자료 미리보기` | done | 발행 자료 상세 `/teacher/activities/[assignmentId]`에서 교사용 미리보기, 수업 활용 메모, 학습 질문, 배포/복제/결과 링크를 확인 |
+| `H13 공개 자료실` | done | `/library`에서 모든 발행 자료를 공개 카드로 모아 보고, 미리보기/복제/학생 참여/결과 보기로 바로 연결 |
 
 ## 병렬 태스크
 
 | Track | Status | Notes |
 | --- | --- | --- |
-| `P1 HTML Safety Validator` | done | 허용 CDN(Three.js/p5.js/Tailwind) 외 외부 리소스, 외부 이미지, 자동 이동, 권한 API, 동적 실행, postMessage/complete 누락 안내까지 안전 검사 고정 |
+| `P1 HTML Safety Validator` | done | CDN/외부 HTTPS 자료는 차단하지 않고 인터넷 연결 안내로 처리, 자동 이동/권한 API/동적 실행/브라우저 저장소/postMessage 누락만 보호 확인 |
 | `P2 Artifact UX/Editor Polish` | done | 주제 입력, 요청문 복사, 큰 학생 미리보기, 고급 붙여넣기, 안전 상태 안내 UX 기본 마감 |
 | `P3 Sample HTML Templates` | done | 분수 막대 샘플 HTML과 E2E HTML fixture로 기본 템플릿 검증 |
 | `P4 Report Copy/Diagnosis Rules` | done | artifact event payload를 교사용 4블록 문장과 다음 수업 보완점으로 변환 |

@@ -28,6 +28,14 @@ const assignment: PublishedAssignmentListItem = {
   gradeBand: "3-4",
   difficulty: "standard",
   sourceLessonSlug: "whole-and-part",
+  creatorName: "김수학 선생님",
+  teacherGuide: "분수 막대를 눌러 전체와 부분의 관계를 확인하게 합니다.",
+  learningQuestions: [
+    "전체는 몇 조각으로 나누어져 있나요?",
+    "선택한 부분은 전체 중 얼마인가요?",
+  ],
+  hasHtmlArtifact: true,
+  previewBlockTitle: "분수 막대 미리보기",
   blockCount: 1,
   participantCount: 4,
   completedCount: 3,
@@ -44,9 +52,23 @@ describe("TeacherActivityList", () => {
     ).toBeInTheDocument();
     expect(screen.getByText("참여 코드 ABC123")).toBeInTheDocument();
     expect(screen.getByText("분수 막대 조작 자료")).toBeInTheDocument();
+    expect(screen.getByText(/만든 선생님 김수학 선생님/)).toBeInTheDocument();
     expect(screen.getByText("참여 4")).toBeInTheDocument();
     expect(screen.getByText("완료 3")).toBeInTheDocument();
-    expect(screen.getAllByRole("link", { name: /학생 화면/ })[0]).toHaveAttribute(
+    expect(
+      screen.getByText("분수 막대를 눌러 전체와 부분의 관계를 확인하게 합니다."),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/전체는 몇 조각으로 나누어져 있나요/),
+    ).toBeInTheDocument();
+    expect(screen.getByText("분수 막대 미리보기")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /자료 보기/ })).toHaveAttribute(
+      "href",
+      "/teacher/activities/assignment-123",
+    );
+    expect(
+      screen.getAllByRole("link", { name: /학생 링크 열기|학생 참여 화면/ })[0],
+    ).toHaveAttribute(
       "href",
       "/play/ABC123",
     );

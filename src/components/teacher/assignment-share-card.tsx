@@ -153,7 +153,7 @@ export function AssignmentShareCard({
             <Button asChild variant={isDark ? "secondary" : "default"}>
               <Link href={`/play/${code}` as Route}>
                 <MonitorPlay className="size-4" />
-                학생 화면
+                학생 링크 열기
               </Link>
             </Button>
           </div>

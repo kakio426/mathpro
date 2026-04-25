@@ -249,6 +249,9 @@ export function createSupabaseTeacherStore(
           participantCount: 0,
           completedCount: 0,
         };
+        const previewBlock = assignment.document.blocks.find(
+          (block) => block.type === "html-artifact" && block.html,
+        );
 
         return publishedAssignmentListItemSchema.parse({
           id: assignment.id,
@@ -263,6 +266,11 @@ export function createSupabaseTeacherStore(
           gradeBand: assignment.document.gradeBand,
           difficulty: assignment.document.difficulty,
           sourceLessonSlug: assignment.document.sourceLessonSlug,
+          creatorName: assignment.document.creatorName,
+          teacherGuide: assignment.document.teacherGuide,
+          learningQuestions: assignment.document.learningQuestions,
+          hasHtmlArtifact: Boolean(previewBlock),
+          previewBlockTitle: previewBlock?.title,
           blockCount: assignment.document.blocks.length,
           participantCount: counts.participantCount,
           completedCount: counts.completedCount,

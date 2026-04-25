@@ -5,9 +5,9 @@ import type { Route } from "next";
 import {
   BarChart3,
   Blocks,
+  BookOpenText,
   CheckCircle2,
   Copy,
-  ExternalLink,
   Eye,
   MonitorPlay,
   QrCode,
@@ -71,9 +71,16 @@ export type TeacherWorkspaceStep =
   | "published";
 
 const defaultTemplate = teacherHtmlTemplates[0];
+const CREATOR_NAME_STORAGE_KEY = "mathpro:teacher-creator-name";
 
 const navItems = [
   { label: "자료 만들기", href: "/" as Route, icon: Wand2, active: true },
+  {
+    label: "공유 자료실",
+    href: "/library" as Route,
+    icon: BookOpenText,
+    active: false,
+  },
   {
     label: "내 자료",
     href: "/teacher/activities" as Route,
@@ -169,6 +176,46 @@ function topicToDraftForm(topic: string, current: CreateTeacherDraftRequest) {
   };
 }
 
+function normalizeCreatorName(value: string | undefined) {
+  const trimmed = value?.trim();
+
+  return trimmed ? trimmed : undefined;
+}
+
+function normalizeDraftRequest(
+  form: CreateTeacherDraftRequest,
+): CreateTeacherDraftRequest {
+  return {
+    ...form,
+    creatorName: normalizeCreatorName(form.creatorName),
+  };
+}
+
+function readStoredCreatorName() {
+  if (typeof window === "undefined") {
+    return undefined;
+  }
+
+  return normalizeCreatorName(
+    window.localStorage.getItem(CREATOR_NAME_STORAGE_KEY) ?? undefined,
+  );
+}
+
+function persistCreatorName(value: string | undefined) {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  const normalized = normalizeCreatorName(value);
+
+  if (normalized) {
+    window.localStorage.setItem(CREATOR_NAME_STORAGE_KEY, normalized);
+    return;
+  }
+
+  window.localStorage.removeItem(CREATOR_NAME_STORAGE_KEY);
+}
+
 function createInitialForm(
   reuseSource: TeacherWorkspaceReuseSource | null,
 ): CreateTeacherDraftRequest {
@@ -198,6 +245,7 @@ function createInitialForm(
     interactionKind: htmlBlock?.interactionKind ?? "html-artifact",
     difficulty: sourceDocument.difficulty,
     sourceLessonSlug: sourceDocument.sourceLessonSlug,
+    creatorName: sourceDocument.creatorName,
     html: htmlBlock?.html ?? fallbackDraft.html,
     promptTemplate: htmlBlock?.promptTemplate,
     teacherGuide: sourceDocument.teacherGuide,
@@ -290,7 +338,16 @@ export function TeacherWorkspace({
   reuseLoadError = null,
 }: TeacherWorkspaceProps) {
   const initialForm = createInitialForm(reuseSource);
-  const [form, setForm] = useState<CreateTeacherDraftRequest>(initialForm);
+  const [form, setForm] = useState<CreateTeacherDraftRequest>(() => {
+    const storedCreatorName = reuseSource ? undefined : readStoredCreatorName();
+
+    return storedCreatorName && !initialForm.creatorName
+      ? {
+          ...initialForm,
+          creatorName: storedCreatorName,
+        }
+      : initialForm;
+  });
   const [topic, setTopic] = useState(() =>
     createInitialTopic(reuseSource, initialForm),
   );
@@ -322,6 +379,26 @@ export function TeacherWorkspace({
           : promptReady
             ? "prompt-ready"
             : "empty";
+
+  function handleCreatorNameChange(value: string) {
+    const creatorName = normalizeCreatorName(value);
+
+    setForm((current) => ({
+      ...current,
+      creatorName: value,
+    }));
+    setDocument((current) =>
+      current
+        ? {
+            ...current,
+            creatorName,
+            updatedAt: new Date().toISOString(),
+          }
+        : current,
+    );
+    setAssignment(null);
+    persistCreatorName(value);
+  }
 
   function handleTopicChange(value: string) {
     setTopic(value);
@@ -357,7 +434,7 @@ export function TeacherWorkspace({
 
   async function handleCreateDraft(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const nextForm = topicToDraftForm(topic, form);
+    const nextForm = normalizeDraftRequest(topicToDraftForm(topic, form));
 
     setStatus("drafting");
     setError(null);
@@ -397,6 +474,12 @@ export function TeacherWorkspace({
       return;
     }
 
+    const publishDocument: TeacherActivityDocument = {
+      ...document,
+      creatorName: normalizeCreatorName(form.creatorName),
+      updatedAt: new Date().toISOString(),
+    };
+
     setStatus("publishing");
     setError(null);
 
@@ -406,7 +489,7 @@ export function TeacherWorkspace({
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ document }),
+        body: JSON.stringify({ document: publishDocument }),
       });
       const payload = await parseApiJson<PublishResponse>(
         response,
@@ -414,6 +497,7 @@ export function TeacherWorkspace({
       );
 
       setAssignment(payload.assignment);
+      setDocument(payload.assignment.document);
     } catch (nextError) {
       setError(
         nextError instanceof Error
@@ -431,6 +515,7 @@ export function TeacherWorkspace({
     setTopic(template.title);
     setForm({
       ...nextForm,
+      creatorName: form.creatorName,
       promptTemplate: buildPromptForForm(nextForm),
       teacherGuide: `${template.title}을 학생 화면으로 바로 실행해 조작 과정을 함께 관찰합니다.`,
       learningQuestions: [
@@ -577,7 +662,7 @@ export function TeacherWorkspace({
         ) : null}
 
         <form
-          className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_430px]"
+          className="grid gap-5 xl:grid-cols-[minmax(380px,0.75fr)_minmax(720px,1.25fr)]"
           onSubmit={handleCreateDraft}
         >
           <section className="space-y-5">
@@ -875,13 +960,13 @@ export function TeacherWorkspace({
                 </div>
                 <div className="flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-800">
                   <Eye className="size-3.5" />
-                  학생 화면 중심
+                  태블릿/컴퓨터 기준
                 </div>
               </div>
               <div className="overflow-hidden rounded-[1.5rem] border border-border bg-white shadow-soft">
                 {hasPastedResult ? (
                   <iframe
-                    className="h-[520px] w-full bg-white"
+                    className="h-[min(72vh,760px)] min-h-[560px] w-full bg-white"
                     allow=""
                     referrerPolicy="no-referrer"
                     sandbox="allow-scripts"
@@ -954,6 +1039,7 @@ export function TeacherWorkspace({
                   </h2>
                   <p className="mt-2 text-sm leading-6 text-muted">
                     미리보기를 확인한 뒤 학생에게 공유할 참여 코드를 만듭니다.
+                    발행한 자료는 공유 자료실에도 함께 공개됩니다.
                   </p>
                 </div>
                 <Button
@@ -964,6 +1050,22 @@ export function TeacherWorkspace({
                   {status === "drafting" ? "준비 중" : "발행 준비하기"}
                 </Button>
               </div>
+
+              <label className="mt-5 grid gap-2 text-sm font-semibold text-foreground">
+                공유 자료실 표시 이름
+                <Input
+                  aria-label="공유 자료실 표시 이름"
+                  placeholder="예: 김수학 선생님, 4학년 연구모임"
+                  value={form.creatorName ?? ""}
+                  onChange={(event) =>
+                    handleCreatorNameChange(event.target.value)
+                  }
+                />
+                <span className="text-xs leading-5 font-normal text-muted">
+                  비워 두면 “수학프로 선생님”으로 표시됩니다. 로그인 없이 다른
+                  선생님들이 자료를 찾고 복제할 때 보이는 이름입니다.
+                </span>
+              </label>
 
               {error ? (
                 <p className="mt-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm leading-6 text-red-700">
@@ -1056,14 +1158,36 @@ export function TeacherWorkspace({
                 <section className="rounded-[1.5rem] border border-primary/25 bg-[#12312e] p-4 text-white shadow-card">
                   <div className="flex items-center gap-2 text-sm text-teal-50/80">
                     <CheckCircle2 className="size-4 text-emerald-200" />
-                    발행이 끝났습니다. QR, 코드, 링크 중 편한 방식으로 학생에게 공유하세요.
+                    내 자료에 저장됐습니다. 공유 자료실에도 공개됐고, 바로 학생에게 공유할 수 있습니다.
                   </div>
-                  <Button asChild variant="secondary">
-                    <Link href={`/teacher/assignments/${assignment.id}` as Route}>
-                      <ExternalLink className="size-4" />
-                      결과 보기
-                    </Link>
-                  </Button>
+                  <div className="mt-4 grid gap-2 sm:grid-cols-4">
+                    <Button asChild variant="secondary">
+                      <Link href={"/library" as Route}>
+                        <BookOpenText className="size-4" />
+                        공유 자료실 보기
+                      </Link>
+                    </Button>
+                    <Button asChild variant="secondary">
+                      <Link
+                        href={`/teacher/activities/${assignment.id}` as Route}
+                      >
+                        <Eye className="size-4" />
+                        내 자료에서 보기
+                      </Link>
+                    </Button>
+                    <Button asChild variant="secondary">
+                      <Link href={`/play/${assignment.code}` as Route}>
+                        <MonitorPlay className="size-4" />
+                        학생 링크 열기
+                      </Link>
+                    </Button>
+                    <Button asChild variant="secondary">
+                      <Link href={`/teacher/assignments/${assignment.id}` as Route}>
+                        <BarChart3 className="size-4" />
+                        결과 보기
+                      </Link>
+                    </Button>
+                  </div>
                 </section>
               </div>
             ) : null}

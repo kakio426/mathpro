@@ -77,27 +77,24 @@ describe("validateHtmlArtifactSafety", () => {
     expect(result.warnings.join(" ")).toContain("브라우저 저장소");
   });
 
-  it("blocks external resources, javascript URLs, and automatic navigation", () => {
+  it("blocks javascript URLs and automatic navigation", () => {
     const result = validateHtmlArtifactSafety(`
       <base href="https://example.com/" />
       <meta http-equiv="refresh" content="0;url=https://example.com" />
       <a href="javascript:alert('x')">실행</a>
-      <img src="https://example.com/fraction.png" />
-      <style>@import "https://example.com/theme.css";</style>
     `);
 
     expect(result.status).toBe("blocked");
     expect(result.issues.map((issue) => issue.code)).toEqual(
       expect.arrayContaining([
         "base-tag",
-        "external-resource",
         "javascript-url",
         "meta-refresh",
       ]),
     );
   });
 
-  it("allows the curated teaching simulation CDNs", () => {
+  it("allows CDN and external resources without blocking publish", () => {
     const result = validateHtmlArtifactSafety(`
       <!doctype html>
       <html>
@@ -105,8 +102,11 @@ describe("validateHtmlArtifactSafety", () => {
           <script src="https://cdn.tailwindcss.com"></script>
           <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.min.js"></script>
           <script src="https://cdn.jsdelivr.net/npm/p5@1.9.4/lib/p5.min.js"></script>
+          <script src="https://unpkg.com/some-library/index.js"></script>
+          <link rel="stylesheet" href="https://example.com/theme.css" />
         </head>
         <body>
+          <img src="https://example.com/ruler.png" alt="자" />
           <button id="complete">완료</button>
           <script>
             window.parent.postMessage({
@@ -119,20 +119,11 @@ describe("validateHtmlArtifactSafety", () => {
       </html>
     `);
 
-    expect(result.status).toBe("passed");
-  });
-
-  it("blocks unapproved CDNs and external images", () => {
-    const result = validateHtmlArtifactSafety(`
-      <script src="https://unpkg.com/some-library/index.js"></script>
-      <img src="https://example.com/ruler.png" alt="자" />
-    `);
-
-    expect(result.status).toBe("blocked");
+    expect(result.status).toBe("warning");
     expect(result.issues.map((issue) => issue.code)).toEqual(
       expect.arrayContaining(["external-script", "external-resource"]),
     );
-    expect(result.warnings.join(" ")).toContain("외부 이미지는 사용할 수 없습니다");
+    expect(result.warnings.join(" ")).toContain("인터넷 연결이 필요할 수 있습니다");
   });
 
   it("allows ordinary CSS position words while still blocking top window access", () => {

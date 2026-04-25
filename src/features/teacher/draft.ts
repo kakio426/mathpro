@@ -140,6 +140,12 @@ function createHtmlArtifactBlock(
   });
 }
 
+function normalizeCreatorName(value: string | undefined) {
+  const trimmed = value?.trim();
+
+  return trimmed ? trimmed : undefined;
+}
+
 export function createTeacherActivityDraft(
   input: CreateTeacherDraftRequest,
 ): TeacherActivityDocument {
@@ -155,6 +161,7 @@ export function createTeacherActivityDraft(
     goal: input.goal,
     difficulty: input.difficulty,
     sourceLessonSlug: lesson.slug,
+    creatorName: normalizeCreatorName(input.creatorName),
     teacherGuide: input.teacherGuide,
     learningQuestions: input.learningQuestions,
     aiOutputRaw: input.aiOutputRaw,

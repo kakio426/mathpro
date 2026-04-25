@@ -28,7 +28,7 @@ describe("AssignmentShareCard", () => {
     expect(screen.getByRole("img", { name: "ABC123 학생 링크 QR" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "코드 복사" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "링크 복사" })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /학생 화면/ })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: /학생 링크 열기/ })).toHaveAttribute(
       "href",
       "/play/ABC123",
     );

@@ -1,6 +1,6 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { TeacherWorkspaceReuseSource } from "./teacher-workspace";
 import { TeacherWorkspace } from "./teacher-workspace";
 
@@ -43,6 +43,15 @@ const reuseSource: TeacherWorkspaceReuseSource = {
 };
 
 describe("TeacherWorkspace", () => {
+  beforeEach(() => {
+    window.localStorage.setItem("mathpro:tour:teacher-workspace", "seen");
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    window.localStorage.removeItem("mathpro:teacher-creator-name");
+  });
+
   it("preloads a published assignment as editable source material", async () => {
     const user = userEvent.setup();
 
@@ -83,6 +92,7 @@ describe("TeacherWorkspace", () => {
     expect(
       screen.getByText("학생 화면은 자료를 가져오면 바로 나타납니다."),
     ).toBeInTheDocument();
+    expect(screen.getByText("태블릿/컴퓨터 기준")).toBeInTheDocument();
     expect(
       screen.getByRole("button", { name: /발행 준비하기/ }),
     ).toBeDisabled();
@@ -245,5 +255,135 @@ describe("TeacherWorkspace", () => {
     expect(
       screen.getByTitle("학생에게 보일 수업자료 미리보기"),
     ).toBeInTheDocument();
+  });
+
+  it("shows saved-material actions after publishing", async () => {
+    const user = userEvent.setup();
+    const document = {
+      id: "activity-draft",
+      title: "수직선 활동",
+      gradeBand: "3-4",
+      concept: "초등 4학년 수직선에서 3/4 찾기",
+      goal: "초등 4학년 수직선에서 3/4 찾기를 학생이 직접 조작하고 관찰하며 설명한다.",
+      difficulty: "standard",
+      sourceLessonSlug: "whole-and-part",
+      creatorName: "김수학 선생님",
+      teacherGuide: "수직선 위에서 3/4 위치를 직접 움직이며 찾게 합니다.",
+      learningQuestions: ["0과 1 사이를 몇 칸으로 나누었나요?"],
+      blocks: [
+        {
+          id: "html-artifact-1",
+          type: "html-artifact",
+          title: "수직선 활동",
+          instruction: "AI가 만든 학생 활동 화면을 실행합니다.",
+          interactionKind: "html-artifact",
+          html: "<!doctype html><html><body>수직선 활동</body></html>",
+          safetyStatus: "passed",
+          safetyWarnings: [],
+          analysisHooks: [
+            {
+              id: "html-artifact-1:manipulation-pattern",
+              signal: "manipulation-pattern",
+              label: "조작 패턴",
+            },
+          ],
+        },
+      ],
+      status: "draft",
+      createdAt: now,
+      updatedAt: now,
+    };
+    let draftPayload: Record<string, unknown> | null = null;
+    let publishPayload: unknown = null;
+    const fetchMock = vi.fn(
+      async (input: RequestInfo | URL, init?: RequestInit) => {
+        const url = String(input);
+        const body =
+          typeof init?.body === "string"
+            ? (JSON.parse(init.body) as Record<string, unknown>)
+            : {};
+
+        if (url.includes("/api/teacher/activities/draft")) {
+          draftPayload = body;
+          return Response.json({ document });
+        }
+
+        publishPayload = body;
+        return Response.json(
+          {
+            assignment: {
+              id: "assignment-123",
+              activityId: "activity-123",
+              code: "ABC123",
+              status: "active",
+              publishedAt: now,
+              shareUrl: "http://localhost:3000/play/ABC123",
+              document: {
+                ...document,
+                id: "activity-123",
+                status: "published",
+              },
+            },
+          },
+          { status: 201 },
+        );
+      },
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(<TeacherWorkspace />);
+
+    await user.type(
+      screen.getByLabelText("만들고 싶은 자료"),
+      "초등 4학년 수직선에서 3/4 찾기",
+    );
+    await user.click(screen.getByRole("button", { name: "AI 요청문 만들기" }));
+    await user.click(screen.getByRole("button", { name: "AI 결과 가져오기" }));
+    await user.type(
+      screen.getByLabelText("AI가 만든 자료"),
+      "```html\n<!doctype html><html><body>수직선 활동</body></html>\n```",
+    );
+    await user.click(screen.getByRole("button", { name: "미리보기로 가져오기" }));
+    await user.type(
+      screen.getByLabelText("공유 자료실 표시 이름"),
+      "김수학 선생님",
+    );
+    await user.click(screen.getByRole("button", { name: /발행 준비하기/ }));
+    await screen.findByText("수직선 활동");
+    await user.click(screen.getByRole("button", { name: /참여 코드 만들기/ }));
+
+    await waitFor(() => {
+      expect(screen.getByText(/내 자료에 저장됐습니다/)).toBeInTheDocument();
+    });
+    expect(draftPayload).toMatchObject({
+      creatorName: "김수학 선생님",
+    });
+    expect(
+      (publishPayload as { document?: { creatorName?: string } } | null)
+        ?.document?.creatorName,
+    ).toBe("김수학 선생님");
+    expect(window.localStorage.getItem("mathpro:teacher-creator-name")).toBe(
+      "김수학 선생님",
+    );
+    expect(screen.getByRole("link", { name: /공유 자료실 보기/ })).toHaveAttribute(
+      "href",
+      "/library",
+    );
+    expect(screen.getByRole("link", { name: /내 자료에서 보기/ })).toHaveAttribute(
+      "href",
+      "/teacher/activities/assignment-123",
+    );
+    expect(
+      screen.getAllByRole("link", { name: /학생 링크 열기/ })[0],
+    ).toHaveAttribute("href", "/play/ABC123");
+    expect(
+      screen
+        .getAllByRole("link", { name: /결과 보기/ })
+        .some(
+          (link) =>
+            link.getAttribute("href") ===
+            "/teacher/assignments/assignment-123",
+        ),
+    ).toBe(true);
   });
 });

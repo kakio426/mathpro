@@ -30,6 +30,9 @@ export function SiteHeader() {
             <Link href="/">자료 만들기</Link>
           </Button>
           <Button asChild size="sm" variant="ghost">
+            <Link href={"/library" as Route}>공유 자료실</Link>
+          </Button>
+          <Button asChild size="sm" variant="ghost">
             <Link href={"/teacher/activities" as Route}>내 자료</Link>
           </Button>
           <Button asChild size="sm" variant="ghost">
