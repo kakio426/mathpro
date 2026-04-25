@@ -270,6 +270,7 @@ export function createSupabaseTeacherStore(
           learningQuestions: assignment.document.learningQuestions,
           hasHtmlArtifact: Boolean(previewBlock),
           previewBlockTitle: previewBlock?.title,
+          previewHtml: previewBlock?.html,
           blockCount: assignment.document.blocks.length,
           participantCount: counts.participantCount,
           completedCount: counts.completedCount,

@@ -160,6 +160,7 @@ export const publishedAssignmentListItemSchema = z.object({
   learningQuestions: z.array(z.string().min(1)).max(3).optional(),
   hasHtmlArtifact: z.boolean(),
   previewBlockTitle: z.string().min(1).optional(),
+  previewHtml: z.string().min(1).optional(),
   blockCount: z.number().int().nonnegative(),
   participantCount: z.number().int().nonnegative(),
   completedCount: z.number().int().nonnegative(),

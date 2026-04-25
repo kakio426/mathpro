@@ -36,6 +36,7 @@ const assignment: PublishedAssignmentListItem = {
   ],
   hasHtmlArtifact: true,
   previewBlockTitle: "분수 막대 미리보기",
+  previewHtml: "<!doctype html><html><body><h1>분수 막대 썸네일</h1></body></html>",
   blockCount: 1,
   participantCount: 4,
   completedCount: 3,
@@ -62,6 +63,7 @@ describe("TeacherActivityList", () => {
       screen.getByText(/전체는 몇 조각으로 나누어져 있나요/),
     ).toBeInTheDocument();
     expect(screen.getByText("분수 막대 미리보기")).toBeInTheDocument();
+    expect(screen.getByTitle("분수 막대 조작 자료 썸네일")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /자료 보기/ })).toHaveAttribute(
       "href",
       "/teacher/activities/assignment-123",
