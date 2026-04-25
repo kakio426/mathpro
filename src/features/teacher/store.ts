@@ -190,8 +190,7 @@ export function createSupabaseTeacherStore(
       const { data, error } = await supabase
         .from("published_assignments")
         .select("*, teacher_activities(*)")
-        .order("published_at", { ascending: false })
-        .limit(50);
+        .order("published_at", { ascending: false });
 
       if (error) {
         throw new Error(

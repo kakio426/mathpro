@@ -107,4 +107,42 @@ describe("PublicMaterialGallery", () => {
       filterPublicAssignments([baseAssignment, withoutPreview], "preview"),
     ).toEqual([baseAssignment]);
   });
+
+  it("keeps more than fifty public materials visible", () => {
+    const assignments = Array.from({ length: 51 }, (_, index) => ({
+      ...baseAssignment,
+      id: `assignment-${index + 1}`,
+      activityId: `activity-${index + 1}`,
+      code: `A${String(index + 1).padStart(5, "0")}`,
+      title: `공개 자료 ${index + 1}`,
+    }));
+
+    render(<PublicMaterialGallery assignments={assignments} />);
+
+    expect(screen.getByText("공개 자료 1")).toBeInTheDocument();
+    expect(screen.getByText("공개 자료 51")).toBeInTheDocument();
+    expect(screen.getAllByText("51").length).toBeGreaterThan(0);
+  });
+
+  it("does not link closed materials to the student play route", () => {
+    render(
+      <PublicMaterialGallery
+        assignments={[
+          {
+            ...baseAssignment,
+            status: "closed",
+          },
+        ]}
+      />,
+    );
+
+    expect(
+      screen.queryByRole("link", { name: /학생 참여 화면/ }),
+    ).not.toBeInTheDocument();
+    expect(screen.getByText("참여 종료됨")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /자료 미리보기/ })).toHaveAttribute(
+      "href",
+      "/teacher/activities/assignment-123",
+    );
+  });
 });

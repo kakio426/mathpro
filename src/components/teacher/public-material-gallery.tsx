@@ -277,12 +277,19 @@ export function PublicMaterialGallery({
                       </Link>
                     </Button>
                     <div className="grid gap-2 sm:grid-cols-2">
-                      <Button asChild variant="secondary">
-                        <Link href={`/play/${assignment.code}` as Route}>
+                      {assignment.status === "active" ? (
+                        <Button asChild variant="secondary">
+                          <Link href={`/play/${assignment.code}` as Route}>
+                            <MonitorPlay className="size-4" />
+                            학생 참여 화면
+                          </Link>
+                        </Button>
+                      ) : (
+                        <div className="inline-flex h-11 items-center justify-center gap-2 rounded-full border border-border bg-white/65 px-4 text-sm font-semibold text-muted">
                           <MonitorPlay className="size-4" />
-                          학생 참여 화면
-                        </Link>
-                      </Button>
+                          참여 종료됨
+                        </div>
+                      )}
                       <Button asChild variant="secondary">
                         <Link
                           href={`/teacher/assignments/${assignment.id}` as Route}
