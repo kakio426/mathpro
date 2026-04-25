@@ -102,6 +102,13 @@ describe("TeacherActivityList", () => {
     ).toBeInTheDocument();
     expect(screen.getByText("공유 가능한 자료")).toBeInTheDocument();
     expect(screen.getByText("참여 코드 ABC123")).toBeInTheDocument();
+    expect(screen.getByText("1. 화면에 띄우기")).toBeInTheDocument();
+    expect(screen.getByText("2. 링크 공유")).toBeInTheDocument();
+    expect(
+      screen
+        .getAllByRole("link", { name: /학생 링크 열기/ })
+        .some((link) => link.getAttribute("href") === "/play/ABC123"),
+    ).toBe(true);
   });
 
   it("renders the reports board copy for result workflows", () => {
@@ -113,9 +120,36 @@ describe("TeacherActivityList", () => {
       }),
     ).toBeInTheDocument();
     expect(screen.getByText("리포트 자료")).toBeInTheDocument();
+    expect(screen.getByText("완료율")).toBeInTheDocument();
+    expect(screen.getByText("75%")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /결과 보기/ })).toHaveAttribute(
       "href",
       "/teacher/assignments/assignment-123",
+    );
+    expect(
+      screen.queryByRole("link", { name: /학생 링크 열기|학생 참여 화면/ }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("does not send closed assignments to the student play route", () => {
+    render(
+      <TeacherActivityList
+        assignments={[
+          {
+            ...assignment,
+            status: "closed",
+          },
+        ]}
+      />,
+    );
+
+    expect(screen.getByText("참여 종료됨")).toBeInTheDocument();
+    expect(
+      screen.queryByRole("link", { name: /학생 링크 열기|학생 참여 화면/ }),
+    ).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /자료 보기/ })).toHaveAttribute(
+      "href",
+      "/teacher/activities/assignment-123",
     );
   });
 

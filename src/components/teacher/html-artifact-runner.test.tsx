@@ -129,7 +129,8 @@ describe("HtmlArtifactRunner", () => {
 
     render(<HtmlArtifactRunner assignment={assignment} block={htmlBlock} />);
 
-    const iframe = await screen.findByTitle("분수 막대 HTML 자료 실행 화면");
+    const iframe = await screen.findByTitle("분수의 의미 활동 화면");
+    expect(screen.queryByText(/HTML|postMessage/)).not.toBeInTheDocument();
     dispatchArtifactMessage(iframe as HTMLIFrameElement, {
       eventType: "select",
       payload: {
@@ -160,7 +161,7 @@ describe("HtmlArtifactRunner", () => {
 
     render(<HtmlArtifactRunner assignment={assignment} block={htmlBlock} />);
 
-    const iframe = await screen.findByTitle("분수 막대 HTML 자료 실행 화면");
+    const iframe = await screen.findByTitle("분수의 의미 활동 화면");
     dispatchArtifactMessage(iframe as HTMLIFrameElement, {
       eventType: "retry",
       payload: {
@@ -191,7 +192,7 @@ describe("HtmlArtifactRunner", () => {
 
     render(<HtmlArtifactRunner assignment={assignment} block={htmlBlock} />);
 
-    const iframe = await screen.findByTitle("분수 막대 HTML 자료 실행 화면");
+    const iframe = await screen.findByTitle("분수의 의미 활동 화면");
     window.dispatchEvent(
       new MessageEvent("message", {
         data: {
@@ -229,7 +230,7 @@ describe("HtmlArtifactRunner", () => {
 
     render(<HtmlArtifactRunner assignment={assignment} block={htmlBlock} />);
 
-    const iframe = await screen.findByTitle("분수 막대 HTML 자료 실행 화면");
+    const iframe = await screen.findByTitle("분수의 의미 활동 화면");
     dispatchArtifactMessage(iframe as HTMLIFrameElement, {
       eventType: "complete",
     });

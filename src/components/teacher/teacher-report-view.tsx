@@ -26,6 +26,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  toFriendlyActivityTitle,
+  toFriendlyMaterialTitle,
+} from "@/features/teacher/display";
 import type { TeacherReportSummary } from "@/types/teacher";
 
 type TeacherReportViewProps = {
@@ -233,7 +237,7 @@ function StudentSessionBoard({
                     <span className="block text-xs font-semibold uppercase tracking-[0.14em] text-muted">
                       주로 머문 활동
                     </span>
-                    {session.topActivityTitle}
+                    {toFriendlyActivityTitle(session.topActivityTitle)}
                   </p>
                   <p className="rounded-2xl bg-white/80 p-3">
                     <span className="block text-xs font-semibold uppercase tracking-[0.14em] text-muted">
@@ -292,7 +296,7 @@ function ActivitySummaryBoard({
                 <div>
                   <Badge>{blockTypeLabel(activity.blockType)}</Badge>
                   <h3 className="mt-3 text-lg font-semibold tracking-tight text-foreground">
-                    {activity.title}
+                    {toFriendlyActivityTitle(activity.title)}
                   </h3>
                 </div>
                 <div className="grid size-10 place-items-center rounded-2xl bg-primary/10 text-primary">
@@ -334,6 +338,7 @@ function ActivitySummaryBoard({
 }
 
 export function TeacherReportView({ report }: TeacherReportViewProps) {
+  const activityTitle = toFriendlyMaterialTitle(report.activityTitle);
   const kpis = [
     {
       label: "참여",
@@ -396,7 +401,7 @@ export function TeacherReportView({ report }: TeacherReportViewProps) {
               </div>
               <div>
                 <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
-                  {report.activityTitle}
+                  {activityTitle}
                 </h1>
                 <p className="mt-3 max-w-3xl text-sm leading-7 text-teal-50/80">
                   학생별 조작 이벤트를 바탕으로 조작 흐름, 머문 지점, 오개념 신호, 다음 수업 보완점을 모읍니다.

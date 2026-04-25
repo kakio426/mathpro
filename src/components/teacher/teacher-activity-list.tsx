@@ -20,6 +20,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  toFriendlyActivityTitle,
+  toFriendlyConcept,
+  toFriendlyMaterialTitle,
+} from "@/features/teacher/display";
 import type { PublishedAssignmentListItem } from "@/types/teacher";
 
 export type TeacherAssignmentListMode = "library" | "distribution" | "reports";
@@ -47,6 +52,16 @@ function statusLabel(status: PublishedAssignmentListItem["status"]) {
   return status === "active" ? "배포 중" : "종료됨";
 }
 
+function completionRate(assignment: PublishedAssignmentListItem) {
+  if (assignment.participantCount === 0) {
+    return 0;
+  }
+
+  return Math.round(
+    (assignment.completedCount / assignment.participantCount) * 100,
+  );
+}
+
 const modeCopy = {
   library: {
     badge: "내 자료",
@@ -55,7 +70,7 @@ const modeCopy = {
     description:
       "발행한 자료의 참여 코드, 학생 링크, 결과 리포트를 한곳에서 확인합니다. 수업 직전에도 여기서 바로 공유할 수 있습니다.",
     totalLabel: "총 발행 자료",
-    helper: "최근 발행된 자료 50개까지 보여줍니다.",
+    helper: "발행한 자료를 모두 모아 보여줍니다.",
     emptyTitle: "아직 발행한 자료가 없습니다",
     emptyDescription:
       "제작실에서 움직이는 수업자료를 만들고 발행하면, 이곳에서 참여 코드, 학생 링크, 결과 리포트 링크를 다시 확인할 수 있습니다.",
@@ -124,6 +139,111 @@ function EmptyState({ mode }: { mode: TeacherAssignmentListMode }) {
   );
 }
 
+function ClosedParticipationPill() {
+  return (
+    <div className="inline-flex h-11 items-center justify-center gap-2 rounded-full border border-border bg-white/65 px-5 text-sm font-semibold text-muted">
+      <MonitorPlay className="size-4" />
+      참여 종료됨
+    </div>
+  );
+}
+
+function StudentParticipationAction({
+  assignment,
+  label = "학생 링크 열기",
+  variant = "secondary",
+}: {
+  assignment: PublishedAssignmentListItem;
+  label?: string;
+  variant?: "default" | "secondary";
+}) {
+  if (assignment.status !== "active") {
+    return <ClosedParticipationPill />;
+  }
+
+  return (
+    <Button asChild variant={variant}>
+      <Link href={`/play/${assignment.code}` as Route}>
+        <MonitorPlay className="size-4" />
+        {label}
+      </Link>
+    </Button>
+  );
+}
+
+function DistributionQuickGuide() {
+  return (
+    <div className="grid gap-3 rounded-3xl border border-teal-100 bg-teal-50/80 p-4 text-sm leading-6 text-primary md:grid-cols-3">
+      <p>
+        <span className="block text-xs font-semibold tracking-[0.14em] uppercase text-primary/70">
+          1. 화면에 띄우기
+        </span>
+        QR과 참여 코드를 교실 화면에 크게 보여주세요.
+      </p>
+      <p>
+        <span className="block text-xs font-semibold tracking-[0.14em] uppercase text-primary/70">
+          2. 링크 공유
+        </span>
+        학급 채팅방에는 링크 복사를 눌러 바로 보냅니다.
+      </p>
+      <p>
+        <span className="block text-xs font-semibold tracking-[0.14em] uppercase text-primary/70">
+          3. 결과 확인
+        </span>
+        수업 후 결과 보기에서 조작 흐름을 확인합니다.
+      </p>
+    </div>
+  );
+}
+
+function ReportProgressPanel({
+  assignment,
+}: {
+  assignment: PublishedAssignmentListItem;
+}) {
+  const rate = completionRate(assignment);
+
+  return (
+    <div className="grid gap-4 rounded-3xl border border-border bg-white/75 p-4 md:grid-cols-[1fr_1fr_1.4fr] md:items-center">
+      <div>
+        <p className="text-xs font-semibold tracking-[0.14em] text-muted uppercase">
+          참여
+        </p>
+        <p className="mt-1 text-3xl font-semibold text-foreground">
+          {assignment.participantCount}
+          <span className="ml-1 text-base text-muted">명</span>
+        </p>
+      </div>
+      <div>
+        <p className="text-xs font-semibold tracking-[0.14em] text-muted uppercase">
+          완료
+        </p>
+        <p className="mt-1 text-3xl font-semibold text-foreground">
+          {assignment.completedCount}
+          <span className="ml-1 text-base text-muted">명</span>
+        </p>
+      </div>
+      <div>
+        <div className="flex items-center justify-between gap-3">
+          <p className="text-xs font-semibold tracking-[0.14em] text-muted uppercase">
+            완료율
+          </p>
+          <p className="text-sm font-semibold text-foreground">{rate}%</p>
+        </div>
+        <div className="mt-3 h-3 overflow-hidden rounded-full bg-secondary">
+          <div
+            className="h-full rounded-full bg-primary"
+            style={{ width: `${rate}%` }}
+          />
+        </div>
+        <p className="mt-2 text-sm leading-6 text-muted">
+          결과 보기를 열면 학생별 조작 흐름과 다음 수업 보완점을 확인할 수 있습니다.
+        </p>
+      </div>
+    </div>
+  );
+}
+
 export function TeacherActivityList({
   assignments,
   loadError = null,
@@ -188,7 +308,22 @@ export function TeacherActivityList({
           <EmptyState mode={mode} />
         ) : (
           <section className="grid gap-4">
-            {assignments.map((assignment) => (
+            {assignments.map((assignment) => {
+              const showShareCard =
+                mode !== "reports" && assignment.status === "active";
+              const friendlyConcept = toFriendlyConcept(assignment.concept);
+              const friendlyTitle = toFriendlyMaterialTitle(
+                assignment.title,
+                assignment.concept,
+              );
+              const friendlyPreviewTitle = assignment.previewBlockTitle
+                ? toFriendlyActivityTitle(
+                    assignment.previewBlockTitle,
+                    assignment.concept,
+                  )
+                : null;
+
+              return (
               <Card
                 className="overflow-hidden rounded-[1.75rem]"
                 key={assignment.id}
@@ -204,7 +339,7 @@ export function TeacherActivityList({
                       </div>
                       <div>
                         <CardTitle className="text-2xl">
-                          {assignment.title}
+                          {friendlyTitle}
                         </CardTitle>
                         <p className="mt-2 max-w-3xl text-sm leading-7 text-muted">
                           {assignment.goal}
@@ -214,7 +349,7 @@ export function TeacherActivityList({
                           만든 선생님{" "}
                           {assignment.creatorName ?? "수학프로 선생님"}
                         </p>
-                        {assignment.teacherGuide ? (
+                        {mode === "library" && assignment.teacherGuide ? (
                           <p className="mt-3 rounded-2xl bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-950">
                             <span className="mb-1 block text-xs font-semibold tracking-[0.14em] text-amber-700 uppercase">
                               수업 활용
@@ -222,7 +357,7 @@ export function TeacherActivityList({
                             {assignment.teacherGuide}
                           </p>
                         ) : null}
-                        {assignment.learningQuestions?.length ? (
+                        {mode === "library" && assignment.learningQuestions?.length ? (
                           <div className="mt-3 grid gap-2 rounded-2xl bg-teal-50 px-4 py-3 text-sm leading-6 text-primary">
                             <span className="text-xs font-semibold tracking-[0.14em] text-primary/70 uppercase">
                               학습 질문
@@ -240,7 +375,7 @@ export function TeacherActivityList({
                       <span className="flex items-center gap-2">
                         <ClipboardList className="size-4 text-primary" />
                         {assignment.hasHtmlArtifact
-                          ? assignment.previewBlockTitle ?? "미리보기 가능"
+                          ? friendlyPreviewTitle ?? "미리보기 가능"
                           : `${assignment.blockCount}개 블록`}
                       </span>
                       <span className="flex items-center gap-2">
@@ -255,18 +390,31 @@ export function TeacherActivityList({
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <AssignmentShareCard
-                    code={assignment.code}
-                    compact
-                    shareUrl={assignment.shareUrl}
-                    title="교실 공유"
-                  />
+                  {showShareCard ? (
+                    <AssignmentShareCard
+                      code={assignment.code}
+                      compact
+                      shareUrl={assignment.shareUrl}
+                      title="교실 공유"
+                    />
+                  ) : mode === "reports" ? null : (
+                    <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-900">
+                      학생 참여가 종료된 자료입니다. 자료를 다시 쓰려면 복제해서
+                      새 참여 코드를 만들어 주세요.
+                    </div>
+                  )}
+                  {mode === "distribution" && assignment.status === "active" ? (
+                    <DistributionQuickGuide />
+                  ) : null}
+                  {mode === "reports" ? (
+                    <ReportProgressPanel assignment={assignment} />
+                  ) : null}
                   <div className="grid gap-3 text-sm leading-6 text-muted md:grid-cols-[1fr_1fr_auto] md:items-center">
                     <p className="rounded-2xl bg-white/70 px-4 py-3">
                       <span className="block text-xs font-semibold tracking-[0.14em] text-muted uppercase">
                         개념
                       </span>
-                      {assignment.concept}
+                      {friendlyConcept}
                     </p>
                     <p className="rounded-2xl bg-white/70 px-4 py-3">
                       <span className="flex items-center gap-2 text-xs font-semibold tracking-[0.14em] text-muted uppercase">
@@ -276,6 +424,47 @@ export function TeacherActivityList({
                       {formatPublishedDate(assignment.publishedAt)}
                     </p>
                     <div className="flex flex-wrap gap-2">
+                      {mode === "reports" ? (
+                        <Button asChild>
+                          <Link
+                            href={`/teacher/assignments/${assignment.id}` as Route}
+                          >
+                            <BarChart3 className="size-4" />
+                            결과 보기
+                          </Link>
+                        </Button>
+                      ) : null}
+                      {mode === "distribution" ? (
+                        <StudentParticipationAction
+                          assignment={assignment}
+                          label="학생 링크 열기"
+                          variant="default"
+                        />
+                      ) : null}
+                      <Button
+                        asChild
+                        variant={mode === "library" ? "default" : "secondary"}
+                      >
+                        <Link
+                          href={`/teacher/activities/${assignment.id}` as Route}
+                        >
+                          <Eye className="size-4" />
+                          자료 보기
+                        </Link>
+                      </Button>
+                      {mode === "library" ? (
+                        <StudentParticipationAction assignment={assignment} />
+                      ) : null}
+                      {mode !== "reports" ? (
+                        <Button asChild>
+                          <Link
+                            href={`/teacher/assignments/${assignment.id}` as Route}
+                          >
+                            <BarChart3 className="size-4" />
+                            결과 보기
+                          </Link>
+                        </Button>
+                      ) : null}
                       <Button asChild variant="secondary">
                         <Link
                           href={`/?reuseAssignmentId=${assignment.id}` as Route}
@@ -284,33 +473,12 @@ export function TeacherActivityList({
                           복제해서 수정
                         </Link>
                       </Button>
-                      <Button asChild variant="secondary">
-                        <Link
-                          href={`/teacher/activities/${assignment.id}` as Route}
-                        >
-                          <Eye className="size-4" />
-                          자료 보기
-                        </Link>
-                      </Button>
-                      <Button asChild variant="secondary">
-                        <Link href={`/play/${assignment.code}` as Route}>
-                          <MonitorPlay className="size-4" />
-                          학생 참여 화면
-                        </Link>
-                      </Button>
-                      <Button asChild>
-                        <Link
-                          href={`/teacher/assignments/${assignment.id}` as Route}
-                        >
-                          <BarChart3 className="size-4" />
-                          결과 보기
-                        </Link>
-                      </Button>
                     </div>
                   </div>
                 </CardContent>
               </Card>
-            ))}
+              );
+            })}
           </section>
         )}
       </Container>

@@ -18,6 +18,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  toFriendlyActivityTitle,
+  toFriendlyHtmlArtifactSource,
+  toFriendlyMaterialTitle,
+} from "@/features/teacher/display";
 import type { ActivityBlock, PublishedAssignment } from "@/types/teacher";
 
 type TeacherActivityPreviewProps = {
@@ -45,6 +50,13 @@ export function TeacherActivityPreview({
   const document = assignment.document;
   const previewBlock = findPreviewBlock(assignment);
   const learningQuestions = document.learningQuestions?.slice(0, 3) ?? [];
+  const materialTitle = toFriendlyMaterialTitle(document.title, document.concept);
+  const previewTitle = previewBlock
+    ? toFriendlyActivityTitle(previewBlock.title, document.concept)
+    : "미리보기 가능한 학생 화면이 없습니다";
+  const previewSource = previewBlock?.html
+    ? toFriendlyHtmlArtifactSource(previewBlock.html, document.concept)
+    : "";
 
   return (
     <main className="relative isolate overflow-hidden py-6 sm:py-8">
@@ -69,7 +81,7 @@ export function TeacherActivityPreview({
               </div>
               <div>
                 <h1 className="text-3xl font-semibold tracking-tight sm:text-5xl">
-                  {document.title}
+                  {materialTitle}
                 </h1>
                 <p className="mt-3 max-w-3xl text-sm leading-7 text-teal-50/80 sm:text-base">
                   {document.goal}
@@ -99,7 +111,7 @@ export function TeacherActivityPreview({
                   </Badge>
                 </div>
                 <CardTitle className="mt-3 text-2xl">
-                  {previewBlock?.title ?? "미리보기 가능한 학생 화면이 없습니다"}
+                  {previewTitle}
                 </CardTitle>
                 <p className="mt-2 text-sm leading-6 text-muted">
                   이 화면은 선생님 확인용입니다. 실제 수업에서 많이 쓰는 태블릿, 노트북, 전자칠판 비율에 가깝게 보여주며 학생 참여 세션을 만들거나 조작 기록을 저장하지 않습니다.
@@ -119,8 +131,8 @@ export function TeacherActivityPreview({
                     className="h-[min(72vh,780px)] min-h-[560px] w-full bg-white"
                     referrerPolicy="no-referrer"
                     sandbox="allow-scripts"
-                    srcDoc={previewBlock.html}
-                    title={`${previewBlock.title} 교사용 미리보기`}
+                    srcDoc={previewSource}
+                    title={`${previewTitle} 교사용 미리보기`}
                   />
                 </div>
               ) : (

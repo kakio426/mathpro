@@ -8,8 +8,8 @@ import { siteConfig } from "@/lib/site";
 export function SiteHeader() {
   return (
     <header className="sticky top-0 z-20 border-b border-border bg-surface/82 backdrop-blur-xl">
-      <Container className="flex min-h-16 items-center justify-between gap-4">
-        <div className="flex min-w-0 items-center gap-3">
+      <Container className="flex flex-col gap-3 py-3 lg:min-h-16 lg:flex-row lg:items-center lg:justify-between lg:py-0">
+        <div className="flex w-full min-w-0 items-center justify-between gap-3 lg:w-auto lg:justify-start">
           <Link className="flex min-w-0 items-center gap-3" href="/">
             <span className="grid size-9 shrink-0 place-items-center rounded-2xl bg-primary text-sm font-semibold text-primary-foreground shadow-card">
               수
@@ -23,25 +23,27 @@ export function SiteHeader() {
               </span>
             </span>
           </Link>
-          <Badge variant="accent">{siteConfig.shellStage}</Badge>
+          <Badge className="hidden shrink-0 sm:inline-flex" variant="accent">
+            {siteConfig.shellStage}
+          </Badge>
         </div>
-        <nav className="flex items-center gap-2">
-          <Button asChild size="sm" variant="ghost">
+        <nav className="-mx-1 flex w-full items-center gap-2 overflow-x-auto px-1 pb-1 lg:mx-0 lg:w-auto lg:overflow-visible lg:px-0 lg:pb-0">
+          <Button asChild className="shrink-0" size="sm" variant="ghost">
             <Link href="/">자료 만들기</Link>
           </Button>
-          <Button asChild size="sm" variant="ghost">
+          <Button asChild className="shrink-0" size="sm" variant="ghost">
             <Link href={"/library" as Route}>공유 자료실</Link>
           </Button>
-          <Button asChild size="sm" variant="ghost">
+          <Button asChild className="shrink-0" size="sm" variant="ghost">
             <Link href={"/teacher/activities" as Route}>내 자료</Link>
           </Button>
-          <Button asChild size="sm" variant="ghost">
+          <Button asChild className="shrink-0" size="sm" variant="ghost">
             <Link href={"/teacher/distribution" as Route}>배포</Link>
           </Button>
-          <Button asChild size="sm" variant="ghost">
+          <Button asChild className="shrink-0" size="sm" variant="ghost">
             <Link href={"/teacher/reports" as Route}>결과</Link>
           </Button>
-          <Button asChild size="sm" variant="secondary">
+          <Button asChild className="shrink-0" size="sm" variant="secondary">
             <Link href={"/join" as Route}>참여 코드</Link>
           </Button>
         </nav>

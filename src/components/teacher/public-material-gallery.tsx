@@ -19,6 +19,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { toFriendlyMaterialTitle } from "@/features/teacher/display";
 import type { PublishedAssignmentListItem } from "@/types/teacher";
 
 export type PublicLibraryFilter = "all" | "preview" | "active";
@@ -186,7 +187,13 @@ export function PublicMaterialGallery({
           </Card>
         ) : (
           <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-            {visibleAssignments.map((assignment) => (
+            {visibleAssignments.map((assignment) => {
+              const friendlyTitle = toFriendlyMaterialTitle(
+                assignment.title,
+                assignment.concept,
+              );
+
+              return (
               <Card
                 className="group overflow-hidden rounded-[2rem] bg-[#fffaf0] transition hover:-translate-y-1 hover:shadow-soft"
                 key={assignment.id}
@@ -204,7 +211,7 @@ export function PublicMaterialGallery({
                   </div>
                   <div>
                     <CardTitle className="text-2xl leading-tight">
-                      {assignment.title}
+                      {friendlyTitle}
                     </CardTitle>
                     <p className="mt-3 text-sm leading-7 text-muted">
                       {assignment.goal}
@@ -302,7 +309,8 @@ export function PublicMaterialGallery({
                   </div>
                 </CardContent>
               </Card>
-            ))}
+              );
+            })}
           </section>
         )}
       </Container>

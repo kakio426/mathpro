@@ -15,6 +15,10 @@ import {
 } from "@/components/ui/card";
 import { loadLessonSpec } from "@/features/content";
 import { createAppTeacherService, TeacherServiceError } from "@/features/teacher";
+import {
+  toFriendlyConcept,
+  toFriendlyMaterialTitle,
+} from "@/features/teacher/display";
 import type { PublishedAssignment } from "@/types/teacher";
 
 export const dynamic = "force-dynamic";
@@ -200,6 +204,11 @@ export default async function PlayAssignmentPage({
   const htmlArtifactBlock = assignment.document.blocks.find(
     (block) => block.type === "html-artifact" && block.html,
   );
+  const materialTitle = toFriendlyMaterialTitle(
+    assignment.document.title,
+    assignment.document.concept,
+  );
+  const friendlyConcept = toFriendlyConcept(assignment.document.concept);
 
   return (
     <>
@@ -223,7 +232,7 @@ export default async function PlayAssignmentPage({
               <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_420px] lg:items-end">
                 <div>
                   <CardTitle className="text-2xl sm:text-3xl">
-                    {assignment.document.title}
+                    {materialTitle}
                   </CardTitle>
                   <p className="mt-3 max-w-3xl text-sm leading-7 text-muted">
                     {assignment.document.goal}
@@ -234,7 +243,7 @@ export default async function PlayAssignmentPage({
                     <span className="block text-xs font-semibold uppercase tracking-[0.16em]">
                       개념
                     </span>
-                    {assignment.document.concept}
+                    {friendlyConcept}
                   </p>
                   <p className="rounded-2xl bg-white/70 p-4">
                     <span className="block text-xs font-semibold uppercase tracking-[0.16em]">
@@ -256,7 +265,7 @@ export default async function PlayAssignmentPage({
       ) : (
         <LessonRunner
           lesson={lesson}
-          moduleTitle={`${assignment.document.title} | 수학프로 참여`}
+          moduleTitle={`${materialTitle} | 수학프로 참여`}
           sessionStart={{
             key: `assignment:${assignment.code}`,
             endpoint: `/api/assignments/${assignment.code}/sessions`,

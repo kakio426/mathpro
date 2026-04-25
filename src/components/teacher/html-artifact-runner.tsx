@@ -20,6 +20,11 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import {
+  toFriendlyActivityTitle,
+  toFriendlyHtmlArtifactSource,
+  toStudentActivityInstruction,
+} from "@/features/teacher/display";
 import type { JsonObject, JsonValue, TrackedSessionEventType } from "@/types/session";
 import type {
   ActivityBlock,
@@ -156,6 +161,27 @@ function artifactStateLabel(
   }
 }
 
+function artifactEventLabel(eventType: HtmlArtifactEventType) {
+  switch (eventType) {
+    case "ready":
+      return "자료 열림";
+    case "interaction":
+      return "조작";
+    case "select":
+      return "선택";
+    case "drag-end":
+      return "움직임";
+    case "submit":
+      return "제출";
+    case "hint-open":
+      return "도움 보기";
+    case "retry":
+      return "다시 시도";
+    case "complete":
+      return "완료";
+  }
+}
+
 export function HtmlArtifactRunner({
   assignment,
   block,
@@ -176,6 +202,18 @@ export function HtmlArtifactRunner({
   const allowedEvents = block.allowedEvents?.length
     ? block.allowedEvents
     : defaultAllowedEvents;
+  const activityTitle = toFriendlyActivityTitle(
+    block.title,
+    assignment.document.concept,
+  );
+  const activityInstruction = toStudentActivityInstruction(
+    block.instruction,
+    assignment.document.concept,
+  );
+  const artifactSource = toFriendlyHtmlArtifactSource(
+    block.html ?? "",
+    assignment.document.concept,
+  );
 
   const receiveArtifactMessage = useEffectEvent((event: MessageEvent) => {
     const iframeWindow = iframeRef.current?.contentWindow;
@@ -321,7 +359,7 @@ export function HtmlArtifactRunner({
             <div className="space-y-3">
               <div className="flex flex-wrap items-center gap-2">
                 <Badge className="border-white/20 bg-white/10 text-white">
-                  학생 실행 무대
+                  오늘의 활동
                 </Badge>
                 <Badge className="border-amber-200/40 bg-amber-300/15 text-amber-100">
                   참여 코드 {assignment.code}
@@ -329,10 +367,10 @@ export function HtmlArtifactRunner({
               </div>
               <div>
                 <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-                  {block.title}
+                  {activityTitle}
                 </h2>
                 <p className="mt-2 max-w-3xl text-sm leading-7 text-teal-50/80">
-                  {block.instruction}
+                  {activityInstruction}
                 </p>
               </div>
             </div>
@@ -350,18 +388,18 @@ export function HtmlArtifactRunner({
             <div className="overflow-hidden rounded-[1.6rem] border border-border bg-white shadow-soft">
               <iframe
                 ref={iframeRef}
-                title={`${block.title} 실행 화면`}
+                title={`${activityTitle} 화면`}
                 allow=""
                 referrerPolicy="no-referrer"
                 sandbox="allow-scripts"
-                srcDoc={block.html}
+                srcDoc={artifactSource}
                 className="h-[72vh] min-h-[560px] w-full bg-white"
               />
             </div>
 
             <details className="group rounded-[1.25rem] border border-border bg-white/70 p-4 text-sm leading-6 text-muted">
               <summary className="flex cursor-pointer list-none items-center justify-between gap-3 font-semibold text-foreground">
-                <span>활동 저장 상태 보기</span>
+                <span>활동 진행 상태 보기</span>
                 <span className="rounded-full bg-secondary px-3 py-1 text-xs text-muted">
                   기록 {eventLog.length}개
                 </span>
@@ -370,8 +408,8 @@ export function HtmlArtifactRunner({
               <div className="grid gap-4 md:grid-cols-[1.3fr_0.7fr]">
                 <div className="space-y-2">
                   <p>
-                    자료 안에서 발생한 선택, 제출, 완료 신호를 학습 기록으로 저장합니다.
-                    활동이 끝나면 학생 리포트 화면으로 이동합니다.
+                    활동 중 선택과 제출 과정을 안전하게 기록합니다. 활동이 끝나면
+                    오늘의 결과 화면으로 이동합니다.
                   </p>
                   {bridgeError ? (
                     <p className="text-red-700">{bridgeError}</p>
@@ -382,7 +420,7 @@ export function HtmlArtifactRunner({
                   {eventLog.length > 0 ? (
                     eventLog.map((entry) => (
                       <p key={`${entry.eventType}:${entry.receivedAt}`}>
-                        {entry.eventType} ·{" "}
+                        {artifactEventLabel(entry.eventType)} ·{" "}
                         {new Date(entry.receivedAt).toLocaleTimeString("ko-KR")}
                       </p>
                     ))

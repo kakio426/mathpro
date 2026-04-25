@@ -373,7 +373,7 @@ test("HTML artifact play route stores iframe events and completes through the br
   ).toBeVisible();
 
   const artifactFrame = page.frameLocator(
-    'iframe[title="분수 막대 실험 실행 화면"]',
+    'iframe[title="분수 막대 실험 화면"]',
   );
   await artifactFrame.getByRole("button", { name: "첫 번째 조각 선택" }).click();
 
