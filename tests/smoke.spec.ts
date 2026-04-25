@@ -268,11 +268,12 @@ test("teacher creates a draft and publishes an assignment code", async ({ page }
   await page.getByRole("button", { name: "미리보기로 가져오기" }).click();
   await expect(page.getByText("수업에서 이렇게 활용하세요")).toBeVisible();
   await expect(page.getByText("학습 질문")).toBeVisible();
+  await page.getByText("공유 자료실 표시 이름 바꾸기").click();
   await page
     .getByLabel("공유 자료실 표시 이름")
     .fill("김수학 선생님");
   await page.getByRole("button", { name: /발행 준비하기/ }).click();
-  await expect(page.getByText("직접 만져보는 탐구")).toBeVisible();
+  await expect(page.getByRole("button", { name: /참여 코드 만들기/ })).toBeVisible();
   await page.getByRole("button", { name: /참여 코드 만들기/ }).click();
   expect(draftRequest).toMatchObject({
     creatorName: "김수학 선생님",

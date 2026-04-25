@@ -140,8 +140,8 @@ describe("TeacherWorkspace", () => {
       screen.getByRole("button", { name: "AI 결과 가져오기" }),
     ).toBeEnabled();
     expect(
-      screen.getByText("초등 4학년 수직선에서 3/4 찾기"),
-    ).toBeInTheDocument();
+      screen.getAllByText("초등 4학년 수직선에서 3/4 찾기").length,
+    ).toBeGreaterThan(0);
     for (const technicalTerm of screen.queryAllByText("postMessage")) {
       expect(technicalTerm).not.toBeVisible();
     }

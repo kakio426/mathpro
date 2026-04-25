@@ -632,6 +632,30 @@ export function TeacherWorkspace({
           </div>
         </section>
 
+        <nav
+          aria-label="제작실 빠른 이동"
+          className="mb-5 flex gap-2 overflow-x-auto rounded-[1.5rem] border border-border bg-white/70 p-2 shadow-card"
+        >
+          {navItems.map((item) => {
+            const Icon = item.icon;
+
+            return (
+              <Link
+                className={`inline-flex h-11 shrink-0 items-center gap-2 rounded-full px-4 text-sm font-semibold transition ${
+                  item.active
+                    ? "bg-primary text-primary-foreground shadow-card"
+                    : "bg-white text-foreground hover:bg-secondary"
+                }`}
+                href={item.href}
+                key={item.label}
+              >
+                <Icon className="size-4" />
+                {item.label}
+              </Link>
+            );
+          })}
+        </nav>
+
         {reuseSource ? (
           <section className="mb-5 rounded-[1.5rem] border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm leading-6 text-emerald-900 shadow-card">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
@@ -666,52 +690,40 @@ export function TeacherWorkspace({
           onSubmit={handleCreateDraft}
         >
           <section className="space-y-5">
-            <section className="rounded-[1.75rem] border border-border bg-panel p-5 shadow-card sm:p-6">
-              <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
-                <div className="max-w-3xl space-y-3">
-                  <Badge variant="accent">1단계</Badge>
-                  <h2 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
-                    수업자료 주제 입력
-                  </h2>
-                  <p className="text-sm leading-7 text-muted">
-                    주제만 적으면 됩니다. 수업 목표와 세부 요청은 수학프로가
-                    선생님 대신 정리합니다.
-                  </p>
-                </div>
-                <nav className="flex flex-wrap gap-2">
-                  {navItems.map((item) => {
-                    const Icon = item.icon;
-
-                    return (
-                      <Link
-                        className={`inline-flex h-10 items-center gap-2 rounded-full px-4 text-sm font-semibold transition ${
-                          item.active
-                            ? "bg-primary text-primary-foreground shadow-card"
-                            : "bg-white/70 text-foreground hover:bg-white"
-                        }`}
-                        href={item.href}
-                        key={item.label}
-                      >
-                        <Icon className="size-4" />
-                        {item.label}
-                      </Link>
-                    );
-                  })}
-                </nav>
+            <section className="rounded-[2rem] border border-border bg-panel p-5 shadow-card sm:p-7">
+              <div className="space-y-3">
+                <Badge variant="accent">1단계</Badge>
+                <h2 className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
+                  만들고 싶은 수업자료를 한 문장으로 적어주세요
+                </h2>
+                <p className="max-w-2xl text-base leading-8 text-muted">
+                  단원명, 활동 상황, 아이들이 느꼈으면 하는 감각만 적어도
+                  충분합니다. 나머지 조건은 수학프로가 정리합니다.
+                </p>
               </div>
 
-              <div className="mt-6 grid gap-3 md:grid-cols-[minmax(0,1fr)_auto]">
-                <label className="grid gap-2 text-sm font-semibold text-foreground">
+              <div className="mt-7 rounded-[1.75rem] border-2 border-primary/25 bg-white p-4 shadow-soft focus-within:border-primary focus-within:ring-4 focus-within:ring-ring sm:p-5">
+                <label className="grid gap-3 text-base font-semibold text-foreground">
                   만들고 싶은 자료
-                  <Input
-                    className="h-14 rounded-2xl text-base"
+                  <Textarea
+                    className="min-h-36 resize-none rounded-2xl border-0 bg-secondary/55 p-5 text-xl leading-9 shadow-none outline-none placeholder:text-muted focus-visible:ring-0"
                     placeholder="예: 초등 4학년 수직선에서 3/4 찾기"
                     value={topic}
                     onChange={(event) => handleTopicChange(event.target.value)}
                   />
                 </label>
-                <div className="flex flex-col gap-2 self-end sm:flex-row">
+                <p className="mt-3 text-sm leading-6 text-muted">
+                  예시: mm, cm, m, km의 길이 감각을 주변 물건과 건물로 비교하기
+                </p>
+              </div>
+
+              <div className="mt-5 grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+                <p className="text-sm leading-6 text-muted">
+                  입력 후 바로 요청문을 만들거나, 샘플 자료로 먼저 흐름을 볼 수 있습니다.
+                </p>
+                <div className="flex flex-col gap-2 sm:flex-row">
                   <Button
+                    className="h-14 rounded-2xl px-6 text-base"
                     disabled={!hasTopic}
                     type="button"
                     onClick={handlePreparePrompt}
@@ -719,7 +731,12 @@ export function TeacherWorkspace({
                     <Sparkles className="size-4" />
                     AI 요청문 만들기
                   </Button>
-                  <Button asChild type="button" variant="secondary">
+                  <Button
+                    asChild
+                    className="h-14 rounded-2xl px-6 text-base"
+                    type="button"
+                    variant="secondary"
+                  >
                     <a href="#sample-lessons">샘플 수업자료 보기</a>
                   </Button>
                 </div>
@@ -821,92 +838,75 @@ export function TeacherWorkspace({
               </details>
             </section>
 
-            <section className="rounded-[1.75rem] border border-border bg-[#fff6dd] p-5 shadow-card sm:p-6">
-              <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                <div className="space-y-2">
-                  <Badge variant="accent">2단계</Badge>
-                  <h2 className="text-2xl font-semibold tracking-tight text-foreground">
-                    Gemini에 넣을 요청문
-                  </h2>
-                  <p className="max-w-2xl text-sm leading-7 text-muted">
-                    주제를 바탕으로 움직이는 수업자료를 만들어 달라는 요청문을
-                    준비합니다. 복사해서 Gemini에 붙여넣으세요.
-                  </p>
-                </div>
-                {promptReady ? (
-                  <div className="flex flex-wrap gap-2">
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      onClick={() => {
-                        void handleCopyPrompt();
-                      }}
-                    >
-                      <Copy className="size-4" />
-                      요청문 복사하기
-                    </Button>
-                    <Button type="button" onClick={() => setIsImportOpen(true)}>
-                      <MonitorPlay className="size-4" />
-                      AI 결과 가져오기
-                    </Button>
-                  </div>
-                ) : null}
+            <section className="rounded-[1.75rem] border border-amber-200/70 bg-[#fff8e7] p-5 shadow-card sm:p-6">
+              <div className="space-y-2">
+                <Badge variant="accent">2단계</Badge>
+                <h2 className="text-2xl font-semibold tracking-tight text-foreground">
+                  요청문 복사하기
+                </h2>
+                <p className="max-w-2xl text-sm leading-7 text-muted">
+                  주제를 입력하면 Gemini에 바로 붙여넣을 요청문이 준비됩니다.
+                </p>
               </div>
-              <div className="mt-5 rounded-3xl border border-amber-200/70 bg-white/80 p-5">
+              <div className="mt-5 rounded-3xl border border-amber-200/70 bg-white/84 p-5">
                 {promptReady ? (
-                  <div className="space-y-3">
-                    <p className="text-sm font-semibold text-foreground">
-                      요청문이 준비됐습니다.
-                    </p>
-                    <p className="text-sm leading-7 text-muted">
-                      요청문을 복사해 Gemini에 붙여넣고, 결과를 받으면
-                      <strong> AI 결과 가져오기</strong>를 눌러 주세요.
-                    </p>
-                    <div className="grid gap-2 rounded-2xl bg-secondary/70 px-4 py-3 text-sm leading-6 text-muted">
-                      <p>
-                        <span className="font-semibold text-foreground">
-                          주제:
-                        </span>{" "}
-                        {form.concept}
-                      </p>
-                      <p>
-                        <span className="font-semibold text-foreground">
-                          활동:
-                        </span>{" "}
-                        학생이 직접 눌러 보고 움직이며 개념을 발견하는 자료
-                      </p>
-                      <p>
-                        <span className="font-semibold text-foreground">
-                          준비:
-                        </span>{" "}
-                        복사 버튼을 누르면 필요한 제작 조건까지 함께 담깁니다.
-                      </p>
+                  <div className="space-y-4">
+                    <div className="flex items-start gap-3">
+                      <div className="grid size-11 shrink-0 place-items-center rounded-2xl bg-primary/10 text-primary">
+                        <CheckCircle2 className="size-5" />
+                      </div>
+                      <div>
+                        <p className="font-semibold text-foreground">
+                          요청문이 준비됐습니다.
+                        </p>
+                        <p className="mt-1 text-sm leading-6 text-muted">
+                          복사해서 Gemini에 붙여넣고, 결과를 받으면 가져오세요.
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex flex-col gap-2 sm:flex-row">
+                      <Button
+                        className="h-12 rounded-2xl px-5"
+                        type="button"
+                        variant="secondary"
+                        onClick={() => {
+                          void handleCopyPrompt();
+                        }}
+                      >
+                        <Copy className="size-4" />
+                        요청문 복사하기
+                      </Button>
+                      <Button
+                        className="h-12 rounded-2xl px-5"
+                        type="button"
+                        onClick={() => setIsImportOpen(true)}
+                      >
+                        <MonitorPlay className="size-4" />
+                        AI 결과 가져오기
+                      </Button>
                     </div>
                   </div>
                 ) : (
-                  <p className="text-sm leading-7 text-muted">
-                    먼저 수업자료 주제를 적고 <strong>AI 요청문 만들기</strong>를
-                    눌러 주세요.
-                  </p>
+                  <div className="flex items-center gap-3 text-sm leading-6 text-muted">
+                    <Sparkles className="size-5 text-primary" />
+                    먼저 위에 만들고 싶은 자료의 주제를 적어 주세요.
+                  </div>
                 )}
               </div>
             </section>
 
             <section
-              className="rounded-[1.75rem] border border-border bg-surface p-5 shadow-card sm:p-6"
+              className="rounded-[1.75rem] border border-border bg-white/72 p-5 shadow-card sm:p-6"
               id="sample-lessons"
             >
-              <div className="mb-5 flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                <div className="space-y-2">
-                  <Badge variant="accent">샘플</Badge>
-                  <h2 className="text-2xl font-semibold tracking-tight text-foreground">
-                    바로 체험하는 샘플 수업자료
-                  </h2>
-                  <p className="max-w-2xl text-sm leading-7 text-muted">
-                    아직 Gemini 결과가 없어도 샘플을 눌러 학생 화면을 먼저
-                    확인할 수 있습니다.
-                  </p>
-                </div>
+              <div className="mb-4 space-y-2">
+                <Badge variant="accent">샘플</Badge>
+                <h2 className="text-xl font-semibold tracking-tight text-foreground">
+                  샘플로 먼저 보기
+                </h2>
+                <p className="text-sm leading-6 text-muted">
+                  자료가 어떻게 보이는지 빠르게 확인하고 싶을 때만 사용하세요.
+                </p>
               </div>
               <div className="grid gap-3 md:grid-cols-2">
                 {teacherHtmlTemplates.map((template) => {
@@ -915,7 +915,7 @@ export function TeacherWorkspace({
                   return (
                     <button
                       aria-label={`${template.title} 샘플 사용하기`}
-                      className={`rounded-3xl border p-4 text-left transition hover:-translate-y-0.5 hover:shadow-card ${
+                      className={`rounded-2xl border p-4 text-left transition hover:-translate-y-0.5 hover:shadow-card ${
                         isActive
                           ? "border-primary bg-teal-50 text-primary"
                           : "border-border bg-white/82 text-foreground hover:border-primary/35"
@@ -939,7 +939,7 @@ export function TeacherWorkspace({
                           {isActive ? "미리보기 중" : "샘플 보기"}
                         </Badge>
                       </span>
-                      <span className="mt-2 block text-sm leading-6 text-muted">
+                      <span className="mt-2 block line-clamp-2 text-sm leading-6 text-muted">
                         {template.description}
                       </span>
                     </button>
@@ -975,22 +975,15 @@ export function TeacherWorkspace({
                   />
                 ) : (
                   <div className="grid min-h-[420px] place-items-center bg-white/80 p-8">
-                    <div className="w-full max-w-sm space-y-4 text-center">
+                    <div className="w-full max-w-sm space-y-3 text-center">
                       <MonitorPlay className="mx-auto size-10 text-primary" />
-                      <p className="font-semibold text-foreground">
+                      <p className="text-lg font-semibold text-foreground">
                         학생 화면은 자료를 가져오면 바로 나타납니다.
                       </p>
-                      <div className="grid gap-2 text-left text-sm leading-6 text-muted">
-                        <p className="rounded-2xl bg-secondary/70 px-4 py-3">
-                          1. 주제를 적고 요청문을 만듭니다.
-                        </p>
-                        <p className="rounded-2xl bg-secondary/70 px-4 py-3">
-                          2. Gemini에서 만든 자료를 가져옵니다.
-                        </p>
-                        <p className="rounded-2xl bg-secondary/70 px-4 py-3">
-                          3. 학생 화면을 확인하고 참여 코드로 공유합니다.
-                        </p>
-                      </div>
+                      <p className="text-sm leading-6 text-muted">
+                        AI 결과를 가져오거나 샘플을 선택하면 이곳에 큰 화면으로
+                        미리보기됩니다.
+                      </p>
                     </div>
                   </div>
                 )}
@@ -1031,15 +1024,14 @@ export function TeacherWorkspace({
             ) : null}
 
             <section className="rounded-[1.75rem] border border-border bg-panel p-5 shadow-card">
-              <div className="flex flex-wrap items-start justify-between gap-3">
+              <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
                   <Badge variant="accent">4단계</Badge>
                   <h2 className="mt-2 text-xl font-semibold tracking-tight">
-                    발행 준비
+                    참여 코드 만들기
                   </h2>
                   <p className="mt-2 text-sm leading-6 text-muted">
-                    미리보기를 확인한 뒤 학생에게 공유할 참여 코드를 만듭니다.
-                    발행한 자료는 공유 자료실에도 함께 공개됩니다.
+                    학생에게 공유할 코드를 만들고, 공유 자료실에 함께 공개합니다.
                   </p>
                 </div>
                 <Button
@@ -1051,21 +1043,25 @@ export function TeacherWorkspace({
                 </Button>
               </div>
 
-              <label className="mt-5 grid gap-2 text-sm font-semibold text-foreground">
-                공유 자료실 표시 이름
-                <Input
-                  aria-label="공유 자료실 표시 이름"
-                  placeholder="예: 김수학 선생님, 4학년 연구모임"
-                  value={form.creatorName ?? ""}
-                  onChange={(event) =>
-                    handleCreatorNameChange(event.target.value)
-                  }
-                />
-                <span className="text-xs leading-5 font-normal text-muted">
-                  비워 두면 “수학프로 선생님”으로 표시됩니다. 로그인 없이 다른
-                  선생님들이 자료를 찾고 복제할 때 보이는 이름입니다.
-                </span>
-              </label>
+              <details className="mt-5 rounded-2xl border border-border bg-white/72 p-4">
+                <summary className="cursor-pointer list-none text-sm font-semibold text-foreground">
+                  공유 자료실 표시 이름 바꾸기
+                </summary>
+                <label className="mt-4 grid gap-2 text-sm font-semibold text-foreground">
+                  공유 자료실 표시 이름
+                  <Input
+                    aria-label="공유 자료실 표시 이름"
+                    placeholder="예: 김수학 선생님, 4학년 연구모임"
+                    value={form.creatorName ?? ""}
+                    onChange={(event) =>
+                      handleCreatorNameChange(event.target.value)
+                    }
+                  />
+                  <span className="text-xs leading-5 font-normal text-muted">
+                    비워 두면 “수학프로 선생님”으로 표시됩니다.
+                  </span>
+                </label>
+              </details>
 
               {error ? (
                 <p className="mt-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm leading-6 text-red-700">
@@ -1080,7 +1076,11 @@ export function TeacherWorkspace({
                 </div>
               ) : null}
 
-              <div className="mt-5 grid gap-3">
+              <details className="mt-5 rounded-2xl border border-border bg-white/72 p-4">
+                <summary className="cursor-pointer list-none text-sm font-semibold text-foreground">
+                  발행 전 확인 내용 보기
+                </summary>
+                <div className="mt-4 grid gap-3">
                 {(document?.blocks ?? []).length > 0 ? (
                   document?.blocks.map((block, index) => (
                     <article
@@ -1128,7 +1128,8 @@ export function TeacherWorkspace({
                     아직 발행 준비 전입니다. 미리보기 확인 후 <strong>발행 준비하기</strong>를 눌러 주세요.
                   </div>
                 )}
-              </div>
+                </div>
+              </details>
 
               {document ? (
                 <Button
