@@ -1,7 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { HomeHero } from "@/components/home/home-hero";
-import { siteConfig } from "@/lib/site";
 
 vi.mock("next/link", () => ({
   default: ({
@@ -21,12 +20,12 @@ describe("HomeHero", () => {
 
     expect(
       screen.getByRole("heading", {
-        name: "AI로 만든 움직이는 수업자료",
+        name: "어떤 수업자료를 만들까요?",
       }),
     ).toBeInTheDocument();
-    expect(screen.getByText(`${siteConfig.name}`)).toBeInTheDocument();
+    expect(screen.getByText("수학프로 제작실")).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: /자료 문서 만들기/ }),
+      screen.getByRole("button", { name: "AI 요청문 만들기" }),
     ).toBeInTheDocument();
   });
 });

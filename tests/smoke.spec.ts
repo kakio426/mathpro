@@ -212,15 +212,40 @@ test("teacher creates a draft and publishes an assignment code", async ({ page }
     });
   });
 
+  await page.addInitScript(() => {
+    window.localStorage.setItem("mathpro:tour:teacher-workspace", "seen");
+  });
   await page.goto("/");
   await dismissAutoGuideIfVisible(page);
 
   await expect(
-    page.getByRole("heading", { name: "AI로 만든 움직이는 수업자료" }),
+    page.getByRole("heading", {
+      name: "어떤 수업자료를 만들까요?",
+    }),
   ).toBeVisible();
-  await page.getByRole("button", { name: /자료 문서 만들기/ }).click();
+  await expect(page.getByText("고급 설정")).toHaveCount(0);
+  await page
+    .getByLabel("만들고 싶은 자료")
+    .fill("초등 4학년 분수 막대 만들기");
+  await page.getByRole("button", { name: "AI 요청문 만들기" }).click();
+  await expect(page.getByText("요청문이 준비됐습니다.")).toBeVisible();
+  await page.getByRole("button", { name: "요청문 복사하기" }).click();
+  await page.getByRole("button", { name: "AI 결과 가져오기" }).click();
+  await page.getByLabel("AI가 만든 자료").fill(`
+    <!doctype html>
+    <html>
+      <body>
+        <main>
+          <h1>분수 막대 만들기</h1>
+          <button>완료하기</button>
+        </main>
+      </body>
+    </html>
+  `);
+  await page.getByRole("button", { name: "미리보기로 가져오기" }).click();
+  await page.getByRole("button", { name: /발행 준비하기/ }).click();
   await expect(page.getByText("직접 만져보는 탐구")).toBeVisible();
-  await page.getByRole("button", { name: /발행하기/ }).click();
+  await page.getByRole("button", { name: /참여 코드 만들기/ }).click();
   await expect(page.getByText("ABC123")).toBeVisible();
   await expect(page.getByRole("link", { name: /학생 화면/ })).toHaveAttribute(
     "href",
