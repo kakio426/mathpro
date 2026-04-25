@@ -173,14 +173,57 @@ describe("TeacherWorkspace", () => {
     await user.click(screen.getByRole("button", { name: "AI 결과 가져오기" }));
     await user.type(
       screen.getByLabelText("AI가 만든 자료"),
-      "<!doctype html><html><body><h1>수직선 활동</h1></body></html>",
+      `1. 교사용 한 줄: 수직선 위에서 3/4 위치를 직접 움직이며 찾게 합니다.
+
+2. HTML 코드:
+\`\`\`html
+<!doctype html><html><body><h1>수직선 활동</h1></body></html>
+\`\`\`
+
+3. 학습 질문:
+1. 0과 1 사이를 몇 칸으로 나누었나요?
+2. 3/4은 0에서 몇 칸 이동한 위치인가요?
+3. 간격이 같지 않으면 어떤 문제가 생기나요?`,
     );
     await user.click(screen.getByRole("button", { name: "미리보기로 가져오기" }));
 
     expect(
       screen.getByTitle("학생에게 보일 수업자료 미리보기"),
     ).toBeInTheDocument();
+    expect(screen.getByText("수업에서 이렇게 활용하세요")).toBeInTheDocument();
+    expect(
+      screen.getByText("수직선 위에서 3/4 위치를 직접 움직이며 찾게 합니다."),
+    ).toBeInTheDocument();
+    expect(screen.getByText("학습 질문")).toBeInTheDocument();
+    expect(
+      screen.getByText("0과 1 사이를 몇 칸으로 나누었나요?"),
+    ).toBeInTheDocument();
     expect(screen.queryByLabelText("AI가 만든 자료")).not.toBeInTheDocument();
+  });
+
+  it("shows a friendly import error when the AI response has no runnable material", async () => {
+    const user = userEvent.setup();
+
+    render(<TeacherWorkspace />);
+
+    await user.type(
+      screen.getByLabelText("만들고 싶은 자료"),
+      "초등 4학년 길이 단위 비교하기",
+    );
+    await user.click(screen.getByRole("button", { name: "AI 요청문 만들기" }));
+    await user.click(screen.getByRole("button", { name: "AI 결과 가져오기" }));
+    await user.type(
+      screen.getByLabelText("AI가 만든 자료"),
+      "교사용 한 줄: 아직 실행 자료가 없습니다.",
+    );
+    await user.click(screen.getByRole("button", { name: "미리보기로 가져오기" }));
+
+    expect(
+      screen.getByText(
+        "HTML 부분을 찾지 못했어요. Gemini 답변 전체를 다시 붙여넣어 주세요.",
+      ),
+    ).toBeInTheDocument();
+    expect(screen.getByLabelText("AI가 만든 자료")).toBeVisible();
   });
 
   it("lets teachers apply a ready-made number-line template", async () => {

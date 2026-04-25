@@ -27,19 +27,6 @@ export type HtmlArtifactSafetyResult = {
 
 const safetyRules: HtmlSafetyRule[] = [
   {
-    code: "external-script",
-    severity: "blocked",
-    pattern: /<script\b[^>]*\bsrc\s*=/i,
-    message: "외부 script src는 허용하지 않습니다. HTML 안에 필요한 코드를 직접 포함해 주세요.",
-  },
-  {
-    code: "external-resource",
-    severity: "blocked",
-    pattern:
-      /\b(?:href|src|action|poster|data)\s*=\s*["']?\s*https?:\/\/|@import\s+["']https?:\/\/|url\(\s*["']?https?:\/\//i,
-    message: "외부 이미지, CSS, 링크, 리소스 호출은 차단합니다. 수업 자료는 단일 HTML 안에 모두 포함해 주세요.",
-  },
-  {
     code: "javascript-url",
     severity: "blocked",
     pattern: /\b(?:href|src|action)\s*=\s*["']?\s*javascript:/i,
@@ -79,7 +66,7 @@ const safetyRules: HtmlSafetyRule[] = [
     code: "network-request",
     severity: "blocked",
     pattern: /\b(fetch\s*\(|XMLHttpRequest\b|WebSocket\b|EventSource\b|sendBeacon\s*\()/i,
-    message: "외부 네트워크 요청은 허용하지 않습니다. 학생 조작 기록은 postMessage로만 보내 주세요.",
+    message: "외부 네트워크 요청은 허용하지 않습니다. 학생 조작 기록은 수학프로 안에서만 저장해 주세요.",
   },
   {
     code: "browser-storage",
@@ -116,6 +103,14 @@ const safetyRules: HtmlSafetyRule[] = [
   },
 ];
 
+const allowedCdnScriptPrefixes = [
+  "https://cdnjs.cloudflare.com/ajax/libs/three.js/",
+  "https://cdn.jsdelivr.net/npm/three@",
+  "https://cdnjs.cloudflare.com/ajax/libs/p5.js/",
+  "https://cdn.jsdelivr.net/npm/p5@",
+  "https://cdn.tailwindcss.com",
+];
+
 function hasMathproPostMessageSource(html: string) {
   return /source\s*:\s*["']mathpro-html-activity["']/i.test(html);
 }
@@ -130,6 +125,49 @@ function hasCompleteEvent(html: string) {
   );
 }
 
+function isAllowedCdnScript(url: string) {
+  return allowedCdnScriptPrefixes.some((prefix) => url.startsWith(prefix));
+}
+
+function createExternalResourceIssues(html: string): HtmlSafetyIssue[] {
+  const issues: HtmlSafetyIssue[] = [];
+  const attrPattern =
+    /<([a-z0-9-]+)\b[^>]*?\s(src|href|action|poster|data)\s*=\s*["']?\s*(https?:\/\/[^"'\s>]+)/gi;
+
+  for (const match of html.matchAll(attrPattern)) {
+    const tagName = match[1]?.toLowerCase() ?? "";
+    const attribute = match[2]?.toLowerCase() ?? "";
+    const url = match[3]?.trim() ?? "";
+
+    if (tagName === "script" && attribute === "src" && isAllowedCdnScript(url)) {
+      continue;
+    }
+
+    issues.push({
+      code: tagName === "script" ? "external-script" : "external-resource",
+      severity: "blocked",
+      message:
+        tagName === "img" || attribute === "poster" || attribute === "data"
+          ? "외부 이미지는 사용할 수 없습니다. CSS 도형, SVG, 텍스트 라벨로 표현해 주세요."
+          : "허용 목록 밖의 외부 리소스는 차단합니다. Three.js, p5.js, Tailwind CDN만 제한적으로 사용할 수 있습니다.",
+    });
+  }
+
+  const cssExternalPattern =
+    /@import\s+(?:url\()?\s*["']?\s*https?:\/\/|url\(\s*["']?\s*https?:\/\//gi;
+
+  if (cssExternalPattern.test(html)) {
+    issues.push({
+      code: "external-resource",
+      severity: "blocked",
+      message:
+        "외부 CSS나 이미지 URL은 사용할 수 없습니다. 필요한 표현은 HTML 내부 CSS/SVG로 작성해 주세요.",
+    });
+  }
+
+  return issues;
+}
+
 function createCustomIssues(html: string): HtmlSafetyIssue[] {
   const issues: HtmlSafetyIssue[] = [];
 
@@ -138,7 +176,7 @@ function createCustomIssues(html: string): HtmlSafetyIssue[] {
       code: "missing-postmessage",
       severity: "warning",
       message:
-        "postMessage 이벤트가 없습니다. 학생 조작 과정이 저장되지 않아 리포트가 빈약해질 수 있습니다.",
+        "학생 조작 기록 신호가 없습니다. 리포트에 남는 과정 분석이 빈약해질 수 있습니다.",
     });
 
     return issues;
@@ -149,7 +187,7 @@ function createCustomIssues(html: string): HtmlSafetyIssue[] {
       code: "missing-postmessage-source",
       severity: "warning",
       message:
-        "postMessage에는 source: 'mathpro-html-activity'를 포함해야 분석이 안정적입니다.",
+        "수학프로가 학생 활동 신호를 안정적으로 구분하기 위한 표시가 빠져 있습니다.",
     });
   }
 
@@ -158,7 +196,7 @@ function createCustomIssues(html: string): HtmlSafetyIssue[] {
       code: "missing-complete-event",
       severity: "warning",
       message:
-        "complete 이벤트가 없습니다. 학생이 활동을 끝내도 자동으로 리포트 화면으로 이동하지 못할 수 있습니다.",
+        "활동 완료 신호가 없습니다. 학생이 끝내기 버튼을 눌러도 리포트 화면으로 이동하지 못할 수 있습니다.",
     });
   }
 
@@ -169,6 +207,7 @@ export function validateHtmlArtifactSafety(
   html: string,
 ): HtmlArtifactSafetyResult {
   const issues = [
+    ...createExternalResourceIssues(html),
     ...safetyRules
       .filter((rule) => rule.pattern.test(html))
       .map((rule) => ({

@@ -105,9 +105,9 @@ function createHtmlArtifactBlock(
   return withHtmlArtifactSafety({
     id: "html-artifact-1",
     type: "html-artifact",
-    title: `${input.concept} HTML 인터랙티브 자료`,
+    title: `${input.concept} 인터랙티브 자료`,
     instruction:
-      "붙여넣은 HTML을 학생 화면에서 실행하고 postMessage 이벤트를 수집합니다.",
+      "AI가 만든 학생 활동 화면을 실행하고 조작 과정을 수집합니다.",
     interactionKind: input.interactionKind,
     html: input.html,
     allowedEvents: [...defaultHtmlArtifactEvents],
@@ -135,7 +135,8 @@ function createHtmlArtifactBlock(
       },
     ],
     teacherNotes:
-      "HTML 내부에서 window.parent.postMessage로 수학프로 이벤트를 보내야 과정 분석이 가능합니다.",
+      input.teacherGuide ??
+      "학생의 조작 흐름과 완료 여부를 리포트에서 함께 확인합니다.",
   });
 }
 
@@ -154,6 +155,9 @@ export function createTeacherActivityDraft(
     goal: input.goal,
     difficulty: input.difficulty,
     sourceLessonSlug: lesson.slug,
+    teacherGuide: input.teacherGuide,
+    learningQuestions: input.learningQuestions,
+    aiOutputRaw: input.aiOutputRaw,
     status: "draft",
     createdAt: now,
     updatedAt: now,

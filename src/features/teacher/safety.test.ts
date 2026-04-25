@@ -97,6 +97,44 @@ describe("validateHtmlArtifactSafety", () => {
     );
   });
 
+  it("allows the curated teaching simulation CDNs", () => {
+    const result = validateHtmlArtifactSafety(`
+      <!doctype html>
+      <html>
+        <head>
+          <script src="https://cdn.tailwindcss.com"></script>
+          <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.min.js"></script>
+          <script src="https://cdn.jsdelivr.net/npm/p5@1.9.4/lib/p5.min.js"></script>
+        </head>
+        <body>
+          <button id="complete">완료</button>
+          <script>
+            window.parent.postMessage({
+              source: "mathpro-html-activity",
+              eventType: "complete",
+              payload: { isCorrect: true }
+            }, "*");
+          </script>
+        </body>
+      </html>
+    `);
+
+    expect(result.status).toBe("passed");
+  });
+
+  it("blocks unapproved CDNs and external images", () => {
+    const result = validateHtmlArtifactSafety(`
+      <script src="https://unpkg.com/some-library/index.js"></script>
+      <img src="https://example.com/ruler.png" alt="자" />
+    `);
+
+    expect(result.status).toBe("blocked");
+    expect(result.issues.map((issue) => issue.code)).toEqual(
+      expect.arrayContaining(["external-script", "external-resource"]),
+    );
+    expect(result.warnings.join(" ")).toContain("외부 이미지는 사용할 수 없습니다");
+  });
+
   it("allows ordinary CSS position words while still blocking top window access", () => {
     const cssOnly = validateHtmlArtifactSafety(`
       <style>

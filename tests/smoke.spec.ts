@@ -232,6 +232,10 @@ test("teacher creates a draft and publishes an assignment code", async ({ page }
   await page.getByRole("button", { name: "요청문 복사하기" }).click();
   await page.getByRole("button", { name: "AI 결과 가져오기" }).click();
   await page.getByLabel("AI가 만든 자료").fill(`
+    1. 교사용 한 줄: 분수 막대를 직접 눌러 전체와 부분의 관계를 확인하게 합니다.
+
+    2. HTML 코드:
+    \`\`\`html
     <!doctype html>
     <html>
       <body>
@@ -241,8 +245,16 @@ test("teacher creates a draft and publishes an assignment code", async ({ page }
         </main>
       </body>
     </html>
+    \`\`\`
+
+    3. 학습 질문:
+    1. 전체는 몇 조각으로 나누어져 있나요?
+    2. 선택한 부분은 전체 중 얼마인가요?
+    3. 조각의 크기가 같지 않으면 왜 분수로 말하기 어려울까요?
   `);
   await page.getByRole("button", { name: "미리보기로 가져오기" }).click();
+  await expect(page.getByText("수업에서 이렇게 활용하세요")).toBeVisible();
+  await expect(page.getByText("학습 질문")).toBeVisible();
   await page.getByRole("button", { name: /발행 준비하기/ }).click();
   await expect(page.getByText("직접 만져보는 탐구")).toBeVisible();
   await page.getByRole("button", { name: /참여 코드 만들기/ }).click();

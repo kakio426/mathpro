@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 export type AiResultImportDialogProps = {
   open: boolean;
   value: string;
+  error?: string | null;
   onChange: (value: string) => void;
   onClose: () => void;
   onUseResult: () => void;
@@ -17,6 +18,7 @@ export type AiResultImportDialogProps = {
 export function AiResultImportDialog({
   open,
   value,
+  error = null,
   onChange,
   onClose,
   onUseResult,
@@ -113,6 +115,11 @@ export function AiResultImportDialog({
               onChange={(event) => onChange(event.target.value)}
             />
           </label>
+          {error ? (
+            <p className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-900">
+              {error}
+            </p>
+          ) : null}
 
           <details className="rounded-[1.25rem] border border-border bg-white/72 p-4">
             <summary className="cursor-pointer list-none text-sm font-semibold text-foreground">

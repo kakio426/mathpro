@@ -29,6 +29,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
+  buildEducationalSimulationPrompt,
+  parseAiMaterialOutput,
+} from "@/features/teacher/ai-material";
+import {
   createDraftRequestFromTemplate,
   teacherHtmlTemplates,
 } from "@/features/teacher/html-templates";
@@ -135,32 +139,20 @@ const teacherWorkspaceTourSteps: GuidedTourStep[] = [
   },
 ];
 
-function buildGeminiPrompt(form: CreateTeacherDraftRequest) {
-  return [
-    "초등학교 3-4학년 수학 수업에서 사용할 단일 HTML 인터랙티브 자료를 만들어줘.",
-    `개념: ${form.concept}`,
-    `수업 목표: ${form.goal}`,
-    `난이도: ${form.difficulty}`,
-    "요구사항:",
-    "- HTML, CSS, JavaScript를 하나의 HTML 파일 안에 모두 포함해줘.",
-    "- 외부 CDN, 외부 이미지, 외부 스크립트는 사용하지 마.",
-    "- fetch, WebSocket, localStorage, cookie, geolocation, camera, microphone, clipboard, eval, document.write는 사용하지 마.",
-    "- 모바일과 태블릿에서 터치로 조작할 수 있게 만들어줘.",
-    "- 문제풀이보다 학생이 직접 조작하고 관찰하는 활동으로 만들어줘.",
-    "- 활동 시작 시 ready 이벤트를 보내줘.",
-    "- 활동 완료 버튼을 만들고 complete 이벤트를 반드시 보내줘.",
-    "- 학생의 선택, 드래그, 힌트, 재시도, 제출, 완료를 window.parent.postMessage로 보내줘.",
-    "- postMessage payload는 반드시 source: 'mathpro-html-activity', eventType, blockId, payload를 포함해줘.",
-    "- 제출 이벤트 payload에는 isCorrect, response, misconceptionSignal을 포함해줘.",
-    "예시:",
-    "window.parent.postMessage({ source: 'mathpro-html-activity', type: 'submit', eventType: 'submit', blockId: 'main-activity', payload: { isCorrect: true, response: '2/4', misconceptionSignal: null } }, '*');",
-  ].join("\n");
-}
-
 function findHtmlArtifactBlock(document: TeacherActivityDocument) {
   return document.blocks.find(
     (block) => block.type === "html-artifact" && block.html,
   );
+}
+
+function buildPromptForForm(form: CreateTeacherDraftRequest) {
+  return buildEducationalSimulationPrompt({
+    concept: form.concept,
+    difficulty: form.difficulty,
+    goal: form.goal,
+    gradeBand: form.gradeBand,
+    interactionKind: form.interactionKind,
+  });
 }
 
 function topicToDraftForm(topic: string, current: CreateTeacherDraftRequest) {
@@ -192,7 +184,7 @@ function createInitialForm(
 
     return {
       ...blankStarter,
-      promptTemplate: buildGeminiPrompt(blankStarter),
+      promptTemplate: buildPromptForForm(blankStarter),
     };
   }
 
@@ -208,11 +200,14 @@ function createInitialForm(
     sourceLessonSlug: sourceDocument.sourceLessonSlug,
     html: htmlBlock?.html ?? fallbackDraft.html,
     promptTemplate: htmlBlock?.promptTemplate,
+    teacherGuide: sourceDocument.teacherGuide,
+    learningQuestions: sourceDocument.learningQuestions,
+    aiOutputRaw: sourceDocument.aiOutputRaw,
   };
 
   return {
     ...nextForm,
-    promptTemplate: nextForm.promptTemplate ?? buildGeminiPrompt(nextForm),
+    promptTemplate: nextForm.promptTemplate ?? buildPromptForForm(nextForm),
   };
 }
 
@@ -305,11 +300,14 @@ export function TeacherWorkspace({
     "idle",
   );
   const [error, setError] = useState<string | null>(null);
+  const [importError, setImportError] = useState<string | null>(null);
   const [promptReady, setPromptReady] = useState(Boolean(reuseSource));
   const [isImportOpen, setIsImportOpen] = useState(false);
-  const geminiPrompt = form.promptTemplate ?? buildGeminiPrompt(form);
+  const geminiPrompt = form.promptTemplate ?? buildPromptForForm(form);
+  const aiImportValue = form.aiOutputRaw ?? form.html ?? "";
   const hasTopic = topic.trim().length > 0;
   const hasPastedResult = Boolean(form.html?.trim());
+  const learningQuestions = form.learningQuestions?.slice(0, 3) ?? [];
   const documentHasBlockedHtml = Boolean(
     document?.blocks.some((block) => block.safetyStatus === "blocked"),
   );
@@ -331,8 +329,15 @@ export function TeacherWorkspace({
     setDocument(null);
     setAssignment(null);
     setError(null);
+    setImportError(null);
     setIsImportOpen(false);
-    setForm((current) => topicToDraftForm(value, current));
+    setForm((current) => ({
+      ...topicToDraftForm(value, current),
+      html: "",
+      teacherGuide: undefined,
+      learningQuestions: undefined,
+      aiOutputRaw: undefined,
+    }));
   }
 
   function handlePreparePrompt() {
@@ -340,12 +345,13 @@ export function TeacherWorkspace({
 
     setForm({
       ...nextForm,
-      promptTemplate: buildGeminiPrompt(nextForm),
+      promptTemplate: buildPromptForForm(nextForm),
     });
     setPromptReady(true);
     setDocument(null);
     setAssignment(null);
     setError(null);
+    setImportError(null);
     setIsImportOpen(false);
   }
 
@@ -366,7 +372,7 @@ export function TeacherWorkspace({
         },
         body: JSON.stringify({
           ...nextForm,
-          promptTemplate: nextForm.promptTemplate ?? buildGeminiPrompt(nextForm),
+          promptTemplate: nextForm.promptTemplate ?? buildPromptForForm(nextForm),
         }),
       });
       const payload = await parseApiJson<DraftResponse>(
@@ -425,28 +431,49 @@ export function TeacherWorkspace({
     setTopic(template.title);
     setForm({
       ...nextForm,
-      promptTemplate: buildGeminiPrompt(nextForm),
+      promptTemplate: buildPromptForForm(nextForm),
+      teacherGuide: `${template.title}을 학생 화면으로 바로 실행해 조작 과정을 함께 관찰합니다.`,
+      learningQuestions: [
+        "학생이 처음 선택한 조작은 무엇이었나요?",
+        "어느 지점에서 생각을 바꾸거나 다시 시도했나요?",
+        "이 활동을 다른 예시로 바꾸면 어떤 점이 달라질까요?",
+      ],
+      aiOutputRaw: undefined,
     });
     setPromptReady(true);
     setDocument(null);
     setAssignment(null);
     setError(null);
+    setImportError(null);
     setIsImportOpen(false);
   }
 
   function handleImportedResultChange(value: string) {
+    const parsed = parseAiMaterialOutput(value);
+
     setForm((current) => ({
       ...current,
-      html: value,
+      html: parsed.html ?? "",
+      teacherGuide: parsed.teacherGuide,
+      learningQuestions: parsed.learningQuestions,
+      aiOutputRaw: value,
       promptTemplate: current.promptTemplate ?? geminiPrompt,
     }));
     setDocument(null);
     setAssignment(null);
     setError(null);
+    setImportError(
+      parsed.html || !value.trim()
+        ? null
+        : "HTML 부분을 찾지 못했어요. Gemini 답변 전체를 다시 붙여넣어 주세요.",
+    );
   }
 
   function handleUseImportedResult() {
     if (!form.html?.trim()) {
+      setImportError(
+        "HTML 부분을 찾지 못했어요. Gemini 답변 전체를 다시 붙여넣어 주세요.",
+      );
       return;
     }
 
@@ -454,6 +481,7 @@ export function TeacherWorkspace({
     setDocument(null);
     setAssignment(null);
     setError(null);
+    setImportError(null);
   }
 
   async function handleCopyPrompt() {
@@ -884,6 +912,39 @@ export function TeacherWorkspace({
               </div>
             </section>
 
+            {hasPastedResult && (form.teacherGuide || learningQuestions.length) ? (
+              <section className="rounded-[1.75rem] border border-amber-200 bg-[#fff8e7] p-5 shadow-card">
+                <Badge variant="accent">교사용 메모</Badge>
+                {form.teacherGuide ? (
+                  <div className="mt-3 rounded-2xl bg-white/78 px-4 py-3">
+                    <p className="text-xs font-semibold tracking-[0.14em] text-amber-700 uppercase">
+                      수업에서 이렇게 활용하세요
+                    </p>
+                    <p className="mt-2 text-sm leading-7 text-foreground">
+                      {form.teacherGuide}
+                    </p>
+                  </div>
+                ) : null}
+                {learningQuestions.length ? (
+                  <div className="mt-3 rounded-2xl bg-white/78 px-4 py-3">
+                    <p className="text-xs font-semibold tracking-[0.14em] text-primary uppercase">
+                      학습 질문
+                    </p>
+                    <ol className="mt-2 space-y-2 text-sm leading-6 text-foreground">
+                      {learningQuestions.map((question, index) => (
+                        <li className="flex gap-2" key={question}>
+                          <span className="font-mono text-xs text-muted">
+                            {index + 1}
+                          </span>
+                          <span>{question}</span>
+                        </li>
+                      ))}
+                    </ol>
+                  </div>
+                ) : null}
+              </section>
+            ) : null}
+
             <section className="rounded-[1.75rem] border border-border bg-panel p-5 shadow-card">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
@@ -1011,7 +1072,8 @@ export function TeacherWorkspace({
       </div>
       <AiResultImportDialog
         open={isImportOpen}
-        value={form.html ?? ""}
+        value={aiImportValue}
+        error={importError}
         onChange={handleImportedResultChange}
         onClose={() => setIsImportOpen(false)}
         onUseResult={handleUseImportedResult}

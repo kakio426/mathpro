@@ -85,6 +85,9 @@ export const teacherActivityDocumentSchema = z.object({
   goal: z.string().min(1),
   difficulty: teacherDifficultySchema,
   sourceLessonSlug: z.string().min(1),
+  teacherGuide: z.string().min(1).optional(),
+  learningQuestions: z.array(z.string().min(1)).max(3).optional(),
+  aiOutputRaw: z.string().min(1).optional(),
   blocks: z.array(activityBlockSchema).min(1),
   status: z.enum(["draft", "published"]),
   createdAt: z.string().datetime({ offset: true }),
@@ -103,6 +106,9 @@ export const createTeacherDraftRequestSchema = z.object({
   sourceLessonSlug: z.string().min(1).default("whole-and-part"),
   html: z.string().min(1).optional(),
   promptTemplate: z.string().min(1).optional(),
+  teacherGuide: z.string().min(1).optional(),
+  learningQuestions: z.array(z.string().min(1)).max(3).optional(),
+  aiOutputRaw: z.string().min(1).optional(),
 });
 export type CreateTeacherDraftRequest = z.infer<
   typeof createTeacherDraftRequestSchema
