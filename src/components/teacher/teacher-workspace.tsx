@@ -3,6 +3,7 @@
 import Link from "next/link";
 import type { Route } from "next";
 import {
+  ArrowRight,
   BarChart3,
   Blocks,
   BookOpenText,
@@ -112,26 +113,31 @@ const studioSteps = [
   {
     id: "01",
     title: "주제 입력",
+    shortTitle: "주제",
     description: "만들고 싶은 수업자료를 한 문장으로 적습니다.",
   },
   {
     id: "02",
-    title: "AI 요청문 복사",
+    title: "요청문 복사",
+    shortTitle: "복사",
     description: "Gemini에 붙여넣을 요청문을 자동으로 만듭니다.",
   },
   {
     id: "03",
     title: "결과 붙여넣기",
+    shortTitle: "붙여넣기",
     description: "Gemini 답변 전체를 수학프로에 가져옵니다.",
   },
   {
     id: "04",
-    title: "학생 화면 확인",
+    title: "화면 확인",
+    shortTitle: "확인",
     description: "학생에게 보일 화면을 크게 확인합니다.",
   },
   {
     id: "05",
     title: "발행",
+    shortTitle: "발행",
     description: "학생 화면을 확인하고 참여 코드로 공유합니다.",
   },
 ];
@@ -685,48 +691,60 @@ export function TeacherWorkspace({
         className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_12%_10%,rgba(15,118,110,0.18),transparent_28%),radial-gradient(circle_at_88%_0%,rgba(245,158,11,0.18),transparent_24%)]"
       />
       <div className="mx-auto w-full max-w-[1480px] px-4 py-5 sm:px-6 lg:px-8">
-        <section className="mb-5 overflow-hidden rounded-[2rem] border border-border bg-[#12312e] px-5 py-6 text-white shadow-soft sm:px-7 lg:px-8">
-          <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-end">
-            <div className="space-y-4">
-              <div className="flex flex-wrap items-center gap-2">
-                <Badge className="border-white/20 bg-white/10 text-white">
-                  AI 수업자료 메이커
-                </Badge>
-                <Badge className="border-amber-200/40 bg-amber-300/15 text-amber-100">
-                  주제만 넣고 시작
-                </Badge>
-              </div>
-              <div className="space-y-3">
-                <p className="text-sm font-semibold tracking-[0.18em] text-teal-100 uppercase">
-                  수학프로 제작실
-                </p>
-                <h1 className="max-w-4xl text-balance text-3xl font-semibold tracking-tight [word-break:keep-all] sm:text-5xl">
-                  어떤 수업자료를 만들까요?
-                </h1>
-                <p className="max-w-2xl text-sm leading-7 text-teal-50/80 sm:text-base">
-                  주제만 적으면 수학프로가 Gemini에 넣을 요청문을 준비합니다.
-                  선생님은 학생에게 보일 화면만 확인하고 공유하면 됩니다.
-                </p>
+        <section className="mb-4 overflow-hidden rounded-[1.5rem] border border-white/10 bg-[#12312e] px-4 py-4 text-white shadow-card sm:px-5 sm:py-5 lg:px-6">
+          <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(640px,0.9fr)] xl:items-center">
+            <div className="space-y-3">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="flex flex-wrap items-center gap-2">
+                  <Badge className="border-white/20 bg-white/10 text-white">
+                    AI 수업자료 메이커
+                  </Badge>
+                  <Badge className="border-amber-200/40 bg-amber-300/15 text-amber-100">
+                    주제만 넣고 시작
+                  </Badge>
+                </div>
                 <GuidedTour
                   autoOpen
-                  className="border-white/20 bg-white/10 text-white hover:bg-white/20"
-                  startLabel="처음 사용하는 선생님 안내"
+                  className="h-9 border-white/20 bg-white/10 px-3 text-xs text-white shadow-none hover:bg-white/20"
+                  startLabel="처음 안내"
                   steps={teacherWorkspaceTourSteps}
                   storageKey="mathpro:tour:teacher-workspace"
                 />
               </div>
+              <div>
+                <p className="text-xs font-semibold tracking-[0.14em] text-teal-100 uppercase">
+                  수학프로 제작실
+                </p>
+                <h1 className="mt-1 max-w-3xl text-balance text-2xl font-semibold tracking-tight [word-break:keep-all] sm:text-4xl">
+                  어떤 수업자료를 만들까요?
+                </h1>
+                <p className="mt-2 max-w-xl text-sm leading-6 text-teal-50/78">
+                  주제 한 줄이면 AI 요청문, 학생 화면 확인, 배포까지 이어집니다.
+                </p>
+              </div>
             </div>
-            <div className="grid grid-cols-2 gap-3 text-sm sm:grid-cols-5 lg:grid-cols-5">
-              {studioSteps.map((step) => (
-                <div
-                  className="rounded-2xl border border-white/10 bg-white/10 p-4"
-                  key={step.id}
-                >
-                  <p className="font-mono text-xs text-teal-100/70">{step.id}</p>
-                  <p className="mt-2 font-semibold">{step.title}</p>
-                </div>
+            <ol
+              aria-label="자료 제작 흐름"
+              className="-mx-1 flex flex-nowrap items-center gap-1.5 overflow-x-auto px-1 pb-1 text-[0.7rem] sm:gap-2 sm:text-xs xl:justify-end xl:overflow-visible"
+            >
+              {studioSteps.map((step, index) => (
+                <li className="flex shrink-0 items-center gap-2" key={step.id}>
+                  <span className="inline-flex h-8 items-center gap-1.5 rounded-full border border-white/15 bg-white/10 px-2 font-semibold text-white/92 sm:h-9 sm:gap-2 sm:px-3">
+                    <span className="font-mono text-[0.68rem] text-teal-100/70">
+                      {step.id}
+                    </span>
+                    <span className="sm:hidden">{step.shortTitle}</span>
+                    <span className="hidden sm:inline">{step.title}</span>
+                  </span>
+                  {index < studioSteps.length - 1 ? (
+                    <ArrowRight
+                      aria-hidden="true"
+                      className="hidden size-3.5 text-white/35 xl:block"
+                    />
+                  ) : null}
+                </li>
               ))}
-            </div>
+            </ol>
           </div>
         </section>
 
