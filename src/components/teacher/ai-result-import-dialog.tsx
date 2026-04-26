@@ -75,7 +75,7 @@ export function AiResultImportDialog({
               </span>
               <div>
                 <p className="text-xs font-semibold tracking-[0.16em] text-muted uppercase">
-                  AI 결과 가져오기
+                  Gemini 결과 붙여넣기
                 </p>
                 <h2
                   className="mt-1 text-2xl font-semibold tracking-tight text-foreground"
@@ -86,7 +86,7 @@ export function AiResultImportDialog({
               </div>
             </div>
             <button
-              aria-label="AI 결과 가져오기 닫기"
+              aria-label="Gemini 결과 붙여넣기 닫기"
               className="grid size-10 shrink-0 place-items-center rounded-full border border-border bg-white/75 text-muted transition hover:bg-white hover:text-foreground"
               type="button"
               onClick={onClose}

@@ -91,7 +91,7 @@ describe("TeacherWorkspace", () => {
       "전체와 부분의 관계를 HTML 조작으로 설명한다.",
     );
 
-    await user.click(screen.getByRole("button", { name: "AI 결과 가져오기" }));
+    await user.click(screen.getByRole("button", { name: "Gemini 결과 붙여넣기" }));
     expect(
       screen.getByDisplayValue(/다시 쓸 HTML 자료/),
     ).toBeInTheDocument();
@@ -134,7 +134,7 @@ describe("TeacherWorkspace", () => {
       "초등 4학년 수직선에서 3/4 찾기",
     );
     await user.click(screen.getByRole("button", { name: "AI 요청문 만들기" }));
-    await user.click(screen.getByRole("button", { name: "AI 결과 가져오기" }));
+    await user.click(screen.getByRole("button", { name: "Gemini 결과 붙여넣기" }));
 
     expect(screen.getByLabelText("AI가 만든 자료")).toBeVisible();
   });
@@ -148,8 +148,11 @@ describe("TeacherWorkspace", () => {
       screen.queryByRole("button", { name: "요청문 복사하기" }),
     ).not.toBeInTheDocument();
     expect(
-      screen.queryByRole("button", { name: "AI 결과 가져오기" }),
-    ).not.toBeInTheDocument();
+      screen.getByRole("button", { name: "Gemini 결과 붙여넣기" }),
+    ).toBeDisabled();
+    expect(
+      screen.getByText("붙여넣기 창은 요청문을 만든 뒤 열립니다."),
+    ).toBeInTheDocument();
 
     await user.type(
       screen.getByLabelText("만들고 싶은 자료"),
@@ -162,7 +165,7 @@ describe("TeacherWorkspace", () => {
       screen.getByRole("button", { name: "요청문 복사하기" }),
     ).toBeEnabled();
     expect(
-      screen.getByRole("button", { name: "AI 결과 가져오기" }),
+      screen.getByRole("button", { name: "Gemini 결과 붙여넣기" }),
     ).toBeEnabled();
     expect(
       screen.getAllByText("초등 4학년 수직선에서 3/4 찾기").length,
@@ -184,7 +187,7 @@ describe("TeacherWorkspace", () => {
       "초등 4학년 수직선에서 3/4 찾기",
     );
     await user.click(screen.getByRole("button", { name: "AI 요청문 만들기" }));
-    await user.click(screen.getByRole("button", { name: "AI 결과 가져오기" }));
+    await user.click(screen.getByRole("button", { name: "Gemini 결과 붙여넣기" }));
 
     expect(screen.getByText("문제가 생겼나요?")).toBeInTheDocument();
     expect(screen.getByText("선생님 용어 도움말")).not.toBeVisible();
@@ -205,7 +208,7 @@ describe("TeacherWorkspace", () => {
       "초등 4학년 수직선에서 3/4 찾기",
     );
     await user.click(screen.getByRole("button", { name: "AI 요청문 만들기" }));
-    await user.click(screen.getByRole("button", { name: "AI 결과 가져오기" }));
+    await user.click(screen.getByRole("button", { name: "Gemini 결과 붙여넣기" }));
     await user.type(
       screen.getByLabelText("AI가 만든 자료"),
       `1. 교사용 한 줄: 수직선 위에서 3/4 위치를 직접 움직이며 찾게 합니다.
@@ -246,7 +249,7 @@ describe("TeacherWorkspace", () => {
       "초등 4학년 길이 단위 비교하기",
     );
     await user.click(screen.getByRole("button", { name: "AI 요청문 만들기" }));
-    await user.click(screen.getByRole("button", { name: "AI 결과 가져오기" }));
+    await user.click(screen.getByRole("button", { name: "Gemini 결과 붙여넣기" }));
     await user.type(
       screen.getByLabelText("AI가 만든 자료"),
       "교사용 한 줄: 아직 실행 자료가 없습니다.",
@@ -360,7 +363,7 @@ describe("TeacherWorkspace", () => {
       "초등 4학년 수직선에서 3/4 찾기",
     );
     await user.click(screen.getByRole("button", { name: "AI 요청문 만들기" }));
-    await user.click(screen.getByRole("button", { name: "AI 결과 가져오기" }));
+    await user.click(screen.getByRole("button", { name: "Gemini 결과 붙여넣기" }));
     await user.type(
       screen.getByLabelText("AI가 만든 자료"),
       "```html\n<!doctype html><html><body>수직선 활동</body></html>\n```",

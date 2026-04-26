@@ -121,7 +121,17 @@ const studioSteps = [
   },
   {
     id: "03",
-    title: "미리보기 후 발행",
+    title: "결과 붙여넣기",
+    description: "Gemini 답변 전체를 수학프로에 가져옵니다.",
+  },
+  {
+    id: "04",
+    title: "학생 화면 확인",
+    description: "학생에게 보일 화면을 크게 확인합니다.",
+  },
+  {
+    id: "05",
+    title: "발행",
     description: "학생 화면을 확인하고 참여 코드로 공유합니다.",
   },
 ];
@@ -144,7 +154,7 @@ const teacherWorkspaceTourSteps: GuidedTourStep[] = [
     title: "기본 화면은 학생에게 보일 모습만 보여줍니다",
     body: "어려운 원본은 접어 두고, 선생님은 학생 화면이 잘 보이는지 먼저 확인합니다.",
     detail:
-      "AI가 만든 결과를 붙여넣어야 할 때만 AI 결과 가져오기 창을 열면 됩니다.",
+      "Gemini가 만든 답변을 받으면 3단계의 Gemini 결과 붙여넣기 버튼을 누르면 됩니다.",
   },
   {
     eyebrow: "발행",
@@ -706,7 +716,7 @@ export function TeacherWorkspace({
                 />
               </div>
             </div>
-            <div className="grid grid-cols-3 gap-3 text-sm">
+            <div className="grid grid-cols-2 gap-3 text-sm sm:grid-cols-5 lg:grid-cols-5">
               {studioSteps.map((step) => (
                 <div
                   className="rounded-2xl border border-white/10 bg-white/10 p-4"
@@ -948,11 +958,12 @@ export function TeacherWorkspace({
                           요청문이 준비됐습니다.
                         </p>
                         <p className="mt-1 text-sm leading-6 text-muted">
-                          복사해서 Gemini에 붙여넣고, 결과를 받으면 가져오세요.
+                          복사해서 Gemini에 붙여넣고, 답변이 나오면 다음
+                          단계에서 수학프로로 가져옵니다.
                         </p>
                       </div>
                     </div>
-                    <div className="flex flex-col gap-2 sm:flex-row">
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
                       <Button
                         className="h-12 rounded-2xl px-5"
                         type="button"
@@ -964,14 +975,9 @@ export function TeacherWorkspace({
                         <Copy className="size-4" />
                         요청문 복사하기
                       </Button>
-                      <Button
-                        className="h-12 rounded-2xl px-5"
-                        type="button"
-                        onClick={() => setIsImportOpen(true)}
-                      >
-                        <MonitorPlay className="size-4" />
-                        AI 결과 가져오기
-                      </Button>
+                      <p className="text-xs leading-5 text-muted">
+                        복사 후 Gemini에 붙여넣고 결과를 기다려 주세요.
+                      </p>
                     </div>
                   </div>
                 ) : (
@@ -983,13 +989,76 @@ export function TeacherWorkspace({
               </div>
             </section>
 
+            <section className="rounded-[1.75rem] border border-primary/20 bg-teal-50/70 p-5 shadow-card sm:p-6">
+              <div className="space-y-2">
+                <Badge variant="accent">3단계</Badge>
+                <h2 className="text-2xl font-semibold tracking-tight text-foreground">
+                  Gemini 결과 붙여넣기
+                </h2>
+                <p className="max-w-2xl text-sm leading-7 text-muted">
+                  Gemini가 만든 답변 전체를 붙여넣으면 수학프로가 학생 화면과
+                  수업 질문을 자동으로 분리합니다.
+                </p>
+              </div>
+              <div className="mt-5 rounded-3xl border border-primary/15 bg-white/86 p-5">
+                {promptReady ? (
+                  <div className="grid gap-4">
+                    <div className="flex items-start gap-3 text-sm leading-6 text-muted">
+                      <MonitorPlay className="mt-0.5 size-5 shrink-0 text-primary" />
+                      <div>
+                        <p className="font-semibold text-foreground">
+                          Gemini 답변을 받았다면 여기에 붙여넣으세요.
+                        </p>
+                        <p className="mt-1">
+                          Gemini 답변의 일부만 고르지 말고 전체를 그대로
+                          붙여넣는 것이 가장 안정적입니다.
+                        </p>
+                      </div>
+                    </div>
+                    <Button
+                      className="h-12 rounded-2xl px-5"
+                      type="button"
+                      onClick={() => setIsImportOpen(true)}
+                    >
+                      <MonitorPlay className="size-4" />
+                      Gemini 결과 붙여넣기
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="grid gap-4">
+                    <div className="flex items-start gap-3 text-sm leading-6 text-muted">
+                      <Sparkles className="mt-0.5 size-5 shrink-0 text-primary" />
+                      <div>
+                        <p className="font-semibold text-foreground">
+                          붙여넣기 창은 요청문을 만든 뒤 열립니다.
+                        </p>
+                        <p className="mt-1">
+                          먼저 1단계에 수업자료 주제를 적고
+                          <strong> AI 요청문 만들기</strong>를 눌러 주세요.
+                        </p>
+                      </div>
+                    </div>
+                    <Button
+                      className="h-12 rounded-2xl px-5"
+                      disabled
+                      type="button"
+                      variant="secondary"
+                    >
+                      <MonitorPlay className="size-4" />
+                      Gemini 결과 붙여넣기
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </section>
+
           </section>
 
           <aside className="space-y-5" id="recent-materials">
             <section className="rounded-[1.75rem] border border-border bg-panel p-5 shadow-card">
               <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <Badge variant="accent">3단계</Badge>
+                  <Badge variant="accent">4단계</Badge>
                   <h2 className="mt-2 text-xl font-semibold tracking-tight">
                     학생에게 보일 미리보기
                   </h2>
@@ -1064,7 +1133,7 @@ export function TeacherWorkspace({
             <section className="rounded-[1.75rem] border border-border bg-panel p-5 shadow-card">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <Badge variant="accent">4단계</Badge>
+                  <Badge variant="accent">5단계</Badge>
                   <h2 className="mt-2 text-xl font-semibold tracking-tight">
                     참여 코드 만들기
                   </h2>
@@ -1110,7 +1179,7 @@ export function TeacherWorkspace({
               {documentHasBlockedHtml ? (
                 <div className="mt-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm leading-6 text-red-700">
                   학생 화면 보호 확인에서 수정이 필요한 부분이 발견됐습니다.
-                  AI 결과 가져오기에서 자료를 다시 붙여넣은 뒤 준비해 주세요.
+                  Gemini 결과 붙여넣기에서 자료를 다시 붙여넣은 뒤 준비해 주세요.
                 </div>
               ) : null}
 

@@ -243,7 +243,7 @@ test("teacher creates a draft and publishes an assignment code", async ({ page }
   await page.getByRole("button", { name: "AI 요청문 만들기" }).click();
   await expect(page.getByText("요청문이 준비됐습니다.")).toBeVisible();
   await page.getByRole("button", { name: "요청문 복사하기" }).click();
-  await page.getByRole("button", { name: "AI 결과 가져오기" }).click();
+  await page.getByRole("button", { name: "Gemini 결과 붙여넣기" }).click();
   await page.getByLabel("AI가 만든 자료").fill(`
     1. 교사용 한 줄: 분수 막대를 직접 눌러 전체와 부분의 관계를 확인하게 합니다.
 
