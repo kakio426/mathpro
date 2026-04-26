@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { TeacherWorkspaceReuseSource } from "./teacher-workspace";
 import { TeacherWorkspace } from "./teacher-workspace";
+import type { PublishedAssignmentListItem } from "@/types/teacher";
 
 const now = "2026-04-25T10:00:00.000Z";
 
@@ -40,6 +41,30 @@ const reuseSource: TeacherWorkspaceReuseSource = {
       },
     ],
   },
+};
+
+const recentMaterial: PublishedAssignmentListItem = {
+  id: "assignment-recent-1",
+  activityId: "activity-recent-1",
+  code: "RECENT",
+  status: "active",
+  publishedAt: now,
+  shareUrl: "http://localhost:3000/play/RECENT",
+  title: "분수 막대 조작 자료",
+  concept: "분수의 의미",
+  goal: "전체를 같은 크기로 나눈 뒤 선택한 부분을 확인한다.",
+  gradeBand: "3-4",
+  difficulty: "standard",
+  sourceLessonSlug: "whole-and-part",
+  creatorName: "수학프로 선생님",
+  teacherGuide: "분수 막대를 직접 눌러 전체와 부분의 관계를 확인합니다.",
+  learningQuestions: ["전체는 몇 조각으로 나뉘었나요?"],
+  hasHtmlArtifact: true,
+  previewBlockTitle: "분수 막대 조작 자료",
+  previewHtml: "<!doctype html><html><body><h1>분수 막대</h1></body></html>",
+  blockCount: 1,
+  participantCount: 3,
+  completedCount: 2,
 };
 
 describe("TeacherWorkspace", () => {
@@ -236,25 +261,22 @@ describe("TeacherWorkspace", () => {
     expect(screen.getByLabelText("AI가 만든 자료")).toBeVisible();
   });
 
-  it("lets teachers apply a ready-made number-line template", async () => {
-    const user = userEvent.setup();
+  it("shows recent published materials as thumbnail cards instead of fixed samples", () => {
+    render(<TeacherWorkspace recentMaterials={[recentMaterial]} />);
 
-    render(<TeacherWorkspace />);
-
-    await user.click(
-      screen.getByRole("button", { name: "수직선 위치 찾기 샘플 사용하기" }),
-    );
-
-    await user.click(screen.getByText("수업 조건 더 보기"));
-    expect(screen.getByLabelText("개념")).toHaveValue("수직선 위 분수");
-    expect(screen.getByLabelText("활동 유형")).toHaveValue("number-line");
-    expect(screen.getByLabelText("수업 목표")).toHaveValue(
-      "0과 1 사이를 같은 간격으로 나누어 3/4의 위치를 찾고 설명한다.",
-    );
-
+    expect(screen.queryByText("샘플로 먼저 보기")).not.toBeInTheDocument();
+    expect(screen.getByText("최근 만들어진 교육자료")).toBeInTheDocument();
     expect(
-      screen.getByTitle("학생에게 보일 수업자료 미리보기"),
+      screen.getByTitle("분수 막대 조작 자료 최근 자료 썸네일"),
     ).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "자료 보기" })).toHaveAttribute(
+      "href",
+      "/teacher/activities/assignment-recent-1",
+    );
+    expect(screen.getByRole("link", { name: "복제해서 시작" })).toHaveAttribute(
+      "href",
+      "/?reuseAssignmentId=assignment-recent-1",
+    );
   });
 
   it("shows saved-material actions after publishing", async () => {

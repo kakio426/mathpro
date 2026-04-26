@@ -3,6 +3,7 @@ import {
   type TeacherWorkspaceReuseSource,
 } from "@/components/teacher/teacher-workspace";
 import { createAppTeacherService, TeacherServiceError } from "@/features/teacher";
+import type { PublishedAssignmentListItem } from "@/types/teacher";
 
 type HomePageProps = {
   searchParams: Promise<{
@@ -50,15 +51,29 @@ async function loadReuseSource(
   }
 }
 
+async function loadRecentMaterials(): Promise<PublishedAssignmentListItem[]> {
+  try {
+    const teacherService = createAppTeacherService();
+    const assignments = await teacherService.listPublishedAssignments();
+
+    return assignments.slice(0, 4);
+  } catch {
+    return [];
+  }
+}
+
 export default async function Home({ searchParams }: HomePageProps) {
   const params = await searchParams;
   const reuseAssignmentId = firstSearchParam(params.reuseAssignmentId);
-  const reuseState = reuseAssignmentId
-    ? await loadReuseSource(reuseAssignmentId)
-    : {
-        reuseSource: null,
-        reuseLoadError: null,
-      };
+  const [reuseState, recentMaterials] = await Promise.all([
+    reuseAssignmentId
+      ? loadReuseSource(reuseAssignmentId)
+      : Promise.resolve({
+          reuseSource: null,
+          reuseLoadError: null,
+        }),
+    loadRecentMaterials(),
+  ]);
 
-  return <TeacherWorkspace {...reuseState} />;
+  return <TeacherWorkspace {...reuseState} recentMaterials={recentMaterials} />;
 }

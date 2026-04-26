@@ -33,12 +33,18 @@ import {
   parseAiMaterialOutput,
 } from "@/features/teacher/ai-material";
 import {
+  toFriendlyConcept,
+  toFriendlyHtmlArtifactSource,
+  toFriendlyMaterialTitle,
+} from "@/features/teacher/display";
+import {
   createDraftRequestFromTemplate,
   teacherHtmlTemplates,
 } from "@/features/teacher/html-templates";
 import type {
   CreateTeacherDraftRequest,
   PublishedAssignment,
+  PublishedAssignmentListItem,
   TeacherActivityDocument,
 } from "@/types/teacher";
 
@@ -60,6 +66,7 @@ export type TeacherWorkspaceReuseSource = {
 type TeacherWorkspaceProps = {
   reuseSource?: TeacherWorkspaceReuseSource | null;
   reuseLoadError?: string | null;
+  recentMaterials?: PublishedAssignmentListItem[];
 };
 
 export type TeacherWorkspaceStep =
@@ -317,6 +324,110 @@ function safetyGuideClassName(
   return "border-border bg-secondary/50 text-muted";
 }
 
+function formatRecentMaterialDate(value: string) {
+  return new Intl.DateTimeFormat("ko-KR", {
+    dateStyle: "medium",
+  }).format(new Date(value));
+}
+
+function RecentMaterialCards({
+  materials,
+}: {
+  materials: PublishedAssignmentListItem[];
+}) {
+  return (
+    <section className="rounded-[1.75rem] border border-border bg-white/76 p-5 shadow-card">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <Badge variant="accent">최근 자료</Badge>
+          <h2 className="mt-2 text-xl font-semibold tracking-tight text-foreground">
+            최근 만들어진 교육자료
+          </h2>
+          <p className="mt-2 text-sm leading-6 text-muted">
+            다른 자료를 참고하거나 복제해서 새 수업자료의 출발점으로 쓸 수 있습니다.
+          </p>
+        </div>
+        <Button asChild size="sm" variant="secondary">
+          <Link href={"/library" as Route}>더 보기</Link>
+        </Button>
+      </div>
+
+      {materials.length > 0 ? (
+        <div className="grid gap-3 sm:grid-cols-2">
+          {materials.map((material) => {
+            const title = toFriendlyMaterialTitle(
+              material.title,
+              material.concept,
+            );
+            const previewSource = material.previewHtml
+              ? toFriendlyHtmlArtifactSource(
+                  material.previewHtml,
+                  material.concept,
+                )
+              : "";
+
+            return (
+              <article
+                className="overflow-hidden rounded-2xl border border-border bg-[#fffdf8]"
+                key={material.id}
+              >
+                <div className="bg-slate-950 p-2">
+                  <div className="relative aspect-[16/10] overflow-hidden rounded-xl bg-white">
+                    {previewSource ? (
+                      <iframe
+                        allow=""
+                        className="pointer-events-none h-[200%] w-[200%] origin-top-left scale-50 border-0 bg-white"
+                        loading="lazy"
+                        referrerPolicy="no-referrer"
+                        sandbox="allow-scripts"
+                        srcDoc={previewSource}
+                        title={`${title} 최근 자료 썸네일`}
+                      />
+                    ) : (
+                      <div className="grid h-full place-items-center bg-secondary/70 p-4 text-center text-sm font-semibold text-muted">
+                        미리보기 준비 중
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <div className="space-y-3 p-4">
+                  <div>
+                    <h3 className="line-clamp-2 text-base font-semibold leading-6 text-foreground">
+                      {title}
+                    </h3>
+                    <p className="mt-1 text-sm text-muted">
+                      {toFriendlyConcept(material.concept)}
+                    </p>
+                  </div>
+                  <p className="text-xs font-semibold text-muted">
+                    최근 발행 {formatRecentMaterialDate(material.publishedAt)}
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    <Button asChild size="sm" variant="secondary">
+                      <Link href={`/teacher/activities/${material.id}` as Route}>
+                        자료 보기
+                      </Link>
+                    </Button>
+                    <Button asChild size="sm">
+                      <Link href={`/?reuseAssignmentId=${material.id}` as Route}>
+                        복제해서 시작
+                      </Link>
+                    </Button>
+                  </div>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      ) : (
+        <div className="rounded-2xl border border-dashed border-border bg-white/65 p-5 text-sm leading-6 text-muted">
+          아직 최근 자료가 없습니다. 첫 자료를 발행하면 이곳에 썸네일로 나타납니다.
+        </div>
+      )}
+    </section>
+  );
+}
+
 async function parseApiJson<T>(response: Response, fallbackMessage: string) {
   const payload = (await response.json().catch(() => null)) as
     | { error?: { message?: string } }
@@ -336,6 +447,7 @@ async function parseApiJson<T>(response: Response, fallbackMessage: string) {
 export function TeacherWorkspace({
   reuseSource = null,
   reuseLoadError = null,
+  recentMaterials = [],
 }: TeacherWorkspaceProps) {
   const initialForm = createInitialForm(reuseSource);
   const [form, setForm] = useState<CreateTeacherDraftRequest>(() => {
@@ -507,30 +619,6 @@ export function TeacherWorkspace({
     } finally {
       setStatus("idle");
     }
-  }
-
-  function handleApplyTemplate(template: (typeof teacherHtmlTemplates)[number]) {
-    const nextForm = createDraftRequestFromTemplate(template);
-
-    setTopic(template.title);
-    setForm({
-      ...nextForm,
-      creatorName: form.creatorName,
-      promptTemplate: buildPromptForForm(nextForm),
-      teacherGuide: `${template.title}을 학생 화면으로 바로 실행해 조작 과정을 함께 관찰합니다.`,
-      learningQuestions: [
-        "학생이 처음 선택한 조작은 무엇이었나요?",
-        "어느 지점에서 생각을 바꾸거나 다시 시도했나요?",
-        "이 활동을 다른 예시로 바꾸면 어떤 점이 달라질까요?",
-      ],
-      aiOutputRaw: undefined,
-    });
-    setPromptReady(true);
-    setDocument(null);
-    setAssignment(null);
-    setError(null);
-    setImportError(null);
-    setIsImportOpen(false);
   }
 
   function handleImportedResultChange(value: string) {
@@ -719,7 +807,7 @@ export function TeacherWorkspace({
 
               <div className="mt-5 grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
                 <p className="text-sm leading-6 text-muted">
-                  입력 후 바로 요청문을 만들거나, 샘플 자료로 먼저 흐름을 볼 수 있습니다.
+                  입력 후 바로 요청문을 만들거나, 최근 자료를 참고할 수 있습니다.
                 </p>
                 <div className="flex flex-col gap-2 sm:flex-row">
                   <Button
@@ -737,7 +825,7 @@ export function TeacherWorkspace({
                     type="button"
                     variant="secondary"
                   >
-                    <a href="#sample-lessons">샘플 수업자료 보기</a>
+                    <a href="#recent-materials">최근 자료 보기</a>
                   </Button>
                 </div>
               </div>
@@ -895,61 +983,9 @@ export function TeacherWorkspace({
               </div>
             </section>
 
-            <section
-              className="rounded-[1.75rem] border border-border bg-white/72 p-5 shadow-card sm:p-6"
-              id="sample-lessons"
-            >
-              <div className="mb-4 space-y-2">
-                <Badge variant="accent">샘플</Badge>
-                <h2 className="text-xl font-semibold tracking-tight text-foreground">
-                  샘플로 먼저 보기
-                </h2>
-                <p className="text-sm leading-6 text-muted">
-                  자료가 어떻게 보이는지 빠르게 확인하고 싶을 때만 사용하세요.
-                </p>
-              </div>
-              <div className="grid gap-3 md:grid-cols-2">
-                {teacherHtmlTemplates.map((template) => {
-                  const isActive = form.html === template.html;
-
-                  return (
-                    <button
-                      aria-label={`${template.title} 샘플 사용하기`}
-                      className={`rounded-2xl border p-4 text-left transition hover:-translate-y-0.5 hover:shadow-card ${
-                        isActive
-                          ? "border-primary bg-teal-50 text-primary"
-                          : "border-border bg-white/82 text-foreground hover:border-primary/35"
-                      }`}
-                      key={template.id}
-                      type="button"
-                      onClick={() => handleApplyTemplate(template)}
-                    >
-                      <span className="flex items-center justify-between gap-3">
-                        <span className="text-base font-semibold">
-                          {template.title}
-                        </span>
-                        <Badge
-                          className={
-                            isActive
-                              ? "border-primary/20 bg-white text-primary"
-                              : undefined
-                          }
-                          variant={isActive ? "default" : "accent"}
-                        >
-                          {isActive ? "미리보기 중" : "샘플 보기"}
-                        </Badge>
-                      </span>
-                      <span className="mt-2 block line-clamp-2 text-sm leading-6 text-muted">
-                        {template.description}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-            </section>
           </section>
 
-          <aside className="space-y-5">
+          <aside className="space-y-5" id="recent-materials">
             <section className="rounded-[1.75rem] border border-border bg-panel p-5 shadow-card">
               <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
                 <div>
@@ -981,7 +1017,7 @@ export function TeacherWorkspace({
                         학생 화면은 자료를 가져오면 바로 나타납니다.
                       </p>
                       <p className="text-sm leading-6 text-muted">
-                        AI 결과를 가져오거나 샘플을 선택하면 이곳에 큰 화면으로
+                        AI 결과를 가져오면 이곳에 큰 화면으로
                         미리보기됩니다.
                       </p>
                     </div>
@@ -989,6 +1025,8 @@ export function TeacherWorkspace({
                 )}
               </div>
             </section>
+
+            <RecentMaterialCards materials={recentMaterials} />
 
             {hasPastedResult && (form.teacherGuide || learningQuestions.length) ? (
               <section className="rounded-[1.75rem] border border-amber-200 bg-[#fff8e7] p-5 shadow-card">
