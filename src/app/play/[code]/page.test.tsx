@@ -54,7 +54,7 @@ vi.mock("@/components/teacher/html-artifact-runner", () => ({
     block: { title: string };
   }) => (
     <div data-testid="html-artifact-runner">
-      {assignment.code} / {block.title}
+      참여 코드 {assignment.code} / {block.title}
     </div>
   ),
 }));
@@ -121,9 +121,8 @@ describe("PlayAssignmentPage", () => {
 
     render(ui);
 
-    expect(screen.getByText("참여 코드 ABC123")).toBeInTheDocument();
     expect(screen.getByTestId("html-artifact-runner")).toHaveTextContent(
-      "분수 막대 HTML 자료",
+      "참여 코드 ABC123 / 분수 막대 HTML 자료",
     );
     expect(screen.queryByTestId("lesson-runner")).not.toBeInTheDocument();
   });

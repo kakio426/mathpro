@@ -210,6 +210,15 @@ export default async function PlayAssignmentPage({
   );
   const friendlyConcept = toFriendlyConcept(assignment.document.concept);
 
+  if (htmlArtifactBlock) {
+    return (
+      <HtmlArtifactRunner
+        assignment={assignment}
+        block={htmlArtifactBlock}
+      />
+    );
+  }
+
   return (
     <>
       <section className="pt-6 sm:pt-8">
@@ -223,7 +232,6 @@ export default async function PlayAssignmentPage({
                   <Badge>조작 기록 저장</Badge>
                 </div>
                 <GuidedTour
-                  autoOpen
                   startLabel="학생 화면 안내"
                   steps={playTourSteps}
                   storageKey="mathpro:tour:play"
@@ -257,22 +265,15 @@ export default async function PlayAssignmentPage({
           </Card>
         </Container>
       </section>
-      {htmlArtifactBlock ? (
-        <HtmlArtifactRunner
-          assignment={assignment}
-          block={htmlArtifactBlock}
-        />
-      ) : (
-        <LessonRunner
-          lesson={lesson}
-          moduleTitle={`${materialTitle} | 수학프로 참여`}
-          sessionStart={{
-            key: `assignment:${assignment.code}`,
-            endpoint: `/api/assignments/${assignment.code}/sessions`,
-            body: {},
-          }}
-        />
-      )}
+      <LessonRunner
+        lesson={lesson}
+        moduleTitle={`${materialTitle} | 수학프로 참여`}
+        sessionStart={{
+          key: `assignment:${assignment.code}`,
+          endpoint: `/api/assignments/${assignment.code}/sessions`,
+          body: {},
+        }}
+      />
     </>
   );
 }

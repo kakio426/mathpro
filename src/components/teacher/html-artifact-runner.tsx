@@ -352,11 +352,11 @@ export function HtmlArtifactRunner({
   }
 
   return (
-    <section className="py-6 sm:py-8">
-      <Container className="max-w-[1500px] space-y-5">
-        <div className="rounded-[2rem] border border-border bg-[#12312e] p-5 text-white shadow-soft sm:p-6">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-            <div className="space-y-3">
+    <section className="px-3 py-3 sm:px-4 sm:py-4">
+      <Container className="flex min-h-[calc(100svh-1.5rem)] max-w-[1600px] flex-col gap-3 px-0 md:h-[calc(100svh-2rem)] md:min-h-0">
+        <div className="shrink-0 rounded-[1.5rem] border border-border bg-[#12312e] p-3 text-white shadow-soft sm:p-4">
+          <div className="flex flex-col gap-2 lg:flex-row lg:items-end lg:justify-between">
+            <div className="min-w-0 space-y-1.5">
               <div className="flex flex-wrap items-center gap-2">
                 <Badge className="border-white/20 bg-white/10 text-white">
                   오늘의 활동
@@ -366,15 +366,15 @@ export function HtmlArtifactRunner({
                 </Badge>
               </div>
               <div>
-                <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+                <h1 className="text-lg font-semibold tracking-tight sm:text-xl">
                   {activityTitle}
-                </h2>
-                <p className="mt-2 max-w-3xl text-sm leading-7 text-teal-50/80">
+                </h1>
+                <p className="mt-1 max-w-4xl text-xs leading-5 text-teal-50/80 sm:text-sm">
                   {activityInstruction}
                 </p>
               </div>
             </div>
-            <div className="rounded-2xl border border-white/15 bg-white/10 px-4 py-3 text-sm">
+            <div className="shrink-0 rounded-2xl border border-white/15 bg-white/10 px-4 py-2 text-sm">
               <p className="text-teal-100/70">현재 상태</p>
               <p className="mt-1 font-semibold">
                 {artifactStateLabel(artifactState)}
@@ -383,9 +383,9 @@ export function HtmlArtifactRunner({
           </div>
         </div>
 
-        <Card className="overflow-hidden rounded-[2rem] bg-[#fefbf5]">
-          <CardContent className="space-y-4 p-3 sm:p-4">
-            <div className="overflow-hidden rounded-[1.6rem] border border-border bg-white shadow-soft">
+        <Card className="flex min-h-[760px] flex-none overflow-hidden rounded-[1.5rem] bg-[#fefbf5] md:min-h-0 md:flex-1">
+          <CardContent className="flex min-h-0 flex-1 flex-col gap-2 p-2 sm:p-3">
+            <div className="min-h-0 flex-1 overflow-hidden rounded-[1.25rem] border border-border bg-white shadow-soft">
               <iframe
                 ref={iframeRef}
                 title={`${activityTitle} 화면`}
@@ -393,11 +393,11 @@ export function HtmlArtifactRunner({
                 referrerPolicy="no-referrer"
                 sandbox="allow-scripts"
                 srcDoc={artifactSource}
-                className="h-[72vh] min-h-[560px] w-full bg-white"
+                className="block h-full w-full bg-white"
               />
             </div>
 
-            <details className="group rounded-[1.25rem] border border-border bg-white/70 p-4 text-sm leading-6 text-muted">
+            <details className="group shrink-0 rounded-[1rem] border border-border bg-white/70 p-2.5 text-sm leading-6 text-muted">
               <summary className="flex cursor-pointer list-none items-center justify-between gap-3 font-semibold text-foreground">
                 <span>활동 진행 상태 보기</span>
                 <span className="rounded-full bg-secondary px-3 py-1 text-xs text-muted">
@@ -405,7 +405,7 @@ export function HtmlArtifactRunner({
                 </span>
               </summary>
               <Separator className="my-4" />
-              <div className="grid gap-4 md:grid-cols-[1.3fr_0.7fr]">
+              <div className="grid max-h-[28svh] gap-4 overflow-auto md:grid-cols-[1.3fr_0.7fr]">
                 <div className="space-y-2">
                   <p>
                     활동 중 선택과 제출 과정을 안전하게 기록합니다. 활동이 끝나면
