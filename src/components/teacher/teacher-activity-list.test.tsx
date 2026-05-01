@@ -43,7 +43,7 @@ const assignment: PublishedAssignmentListItem = {
 };
 
 describe("TeacherActivityList", () => {
-  it("renders published assignments with student and report links", () => {
+  it("renders compact library cards with the key links", () => {
     render(<TeacherActivityList assignments={[assignment]} />);
 
     expect(
@@ -51,17 +51,11 @@ describe("TeacherActivityList", () => {
         name: "다시 꺼내 쓰는 수업자료 보관함",
       }),
     ).toBeInTheDocument();
-    expect(screen.getByText("참여 코드 ABC123")).toBeInTheDocument();
+    expect(screen.getByText("참여 코드")).toBeInTheDocument();
+    expect(screen.getByText("ABC123")).toBeInTheDocument();
     expect(screen.getByText("분수 막대 조작 자료")).toBeInTheDocument();
-    expect(screen.getByText(/만든 선생님 김수학 선생님/)).toBeInTheDocument();
     expect(screen.getByText("참여 4")).toBeInTheDocument();
     expect(screen.getByText("완료 3")).toBeInTheDocument();
-    expect(
-      screen.getByText("분수 막대를 눌러 전체와 부분의 관계를 확인하게 합니다."),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText(/전체는 몇 조각으로 나누어져 있나요/),
-    ).toBeInTheDocument();
     expect(screen.getByText("분수 막대 미리보기")).toBeInTheDocument();
     expect(screen.getByTitle("분수 막대 조작 자료 썸네일")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /자료 보기/ })).toHaveAttribute(
@@ -69,19 +63,37 @@ describe("TeacherActivityList", () => {
       "/teacher/activities/assignment-123",
     );
     expect(
-      screen.getAllByRole("link", { name: /학생 링크 열기|학생 참여 화면/ })[0],
+      screen.getAllByRole("link", { name: /학생 링크/ })[0],
     ).toHaveAttribute(
       "href",
       "/play/ABC123",
     );
-    expect(screen.getByRole("link", { name: /복제해서 수정/ })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: /^복제$/ })).toHaveAttribute(
       "href",
       "/?reuseAssignmentId=assignment-123",
     );
-    expect(screen.getByRole("link", { name: /결과 보기/ })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: /^결과$/ })).toHaveAttribute(
       "href",
       "/teacher/assignments/assignment-123",
     );
+  });
+
+  it("keeps long teaching copy and the QR share card out of library cards", () => {
+    render(<TeacherActivityList assignments={[assignment]} />);
+
+    expect(
+      screen.queryByText("막대를 직접 조작하며 전체와 부분의 관계를 설명한다."),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByText("분수 막대를 눌러 전체와 부분의 관계를 확인하게 합니다."),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByText(/전체는 몇 조각으로 나누어져 있나요/),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByText("QR 입장")).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("img", { name: "ABC123 학생 링크 QR" }),
+    ).not.toBeInTheDocument();
   });
 
   it("shows a friendly empty state when there are no assignments", () => {
@@ -104,6 +116,10 @@ describe("TeacherActivityList", () => {
     ).toBeInTheDocument();
     expect(screen.getByText("공유 가능한 자료")).toBeInTheDocument();
     expect(screen.getByText("참여 코드 ABC123")).toBeInTheDocument();
+    expect(screen.getByText("QR 입장")).toBeInTheDocument();
+    expect(
+      screen.getByRole("img", { name: "ABC123 학생 링크 QR" }),
+    ).toBeInTheDocument();
     expect(screen.getByText("1. 화면에 띄우기")).toBeInTheDocument();
     expect(screen.getByText("2. 링크 공유")).toBeInTheDocument();
     expect(

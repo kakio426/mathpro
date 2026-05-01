@@ -290,6 +290,93 @@ function MaterialThumbnail({
   );
 }
 
+function LibraryAssignmentCard({
+  assignment,
+}: {
+  assignment: PublishedAssignmentListItem;
+}) {
+  const friendlyTitle = toFriendlyMaterialTitle(
+    assignment.title,
+    assignment.concept,
+  );
+  const friendlyPreviewTitle = assignment.previewBlockTitle
+    ? toFriendlyActivityTitle(assignment.previewBlockTitle, assignment.concept)
+    : null;
+
+  return (
+    <Card className="flex h-full flex-col overflow-hidden rounded-[1.5rem] bg-[#fffdf8]">
+      <MaterialThumbnail assignment={assignment} title={friendlyTitle} />
+      <CardHeader className="space-y-3 p-5 pb-3">
+        <div className="flex flex-wrap items-center gap-2">
+          <Badge>{statusLabel(assignment.status)}</Badge>
+          <Badge>{assignment.gradeBand}학년군</Badge>
+          <Badge>{difficultyLabels[assignment.difficulty]}</Badge>
+        </div>
+        <CardTitle className="text-xl leading-snug">
+          {friendlyTitle}
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="flex flex-1 flex-col justify-between gap-4 px-5 pb-5">
+        <div className="grid gap-2 rounded-2xl bg-secondary/60 p-3 text-sm text-muted sm:grid-cols-3">
+          <span className="flex min-w-0 items-center gap-2">
+            <ClipboardList className="size-4 shrink-0 text-primary" />
+            <span className="truncate">
+              {assignment.hasHtmlArtifact
+                ? friendlyPreviewTitle ?? "미리보기 가능"
+                : `${assignment.blockCount}개 블록`}
+            </span>
+          </span>
+          <span className="flex items-center gap-2">
+            <Users className="size-4 shrink-0 text-primary" />
+            참여 {assignment.participantCount}
+          </span>
+          <span className="flex items-center gap-2">
+            <BarChart3 className="size-4 shrink-0 text-primary" />
+            완료 {assignment.completedCount}
+          </span>
+        </div>
+
+        <div className="flex flex-col gap-3 rounded-2xl border border-border bg-white/72 p-3 sm:flex-row sm:items-center sm:justify-between">
+          <p className="min-w-0 text-sm font-semibold text-foreground">
+            <span className="text-xs font-semibold tracking-[0.14em] text-muted uppercase">
+              참여 코드
+            </span>
+            <span className="ml-2 font-mono text-lg tracking-[0.14em]">
+              {assignment.code}
+            </span>
+          </p>
+          <StudentParticipationAction
+            assignment={assignment}
+            label="학생 링크"
+            variant="secondary"
+          />
+        </div>
+
+        <div className="grid gap-2 sm:grid-cols-2">
+          <Button asChild>
+            <Link href={`/teacher/activities/${assignment.id}` as Route}>
+              <Eye className="size-4" />
+              자료 보기
+            </Link>
+          </Button>
+          <Button asChild variant="secondary">
+            <Link href={`/teacher/assignments/${assignment.id}` as Route}>
+              <BarChart3 className="size-4" />
+              결과
+            </Link>
+          </Button>
+          <Button asChild variant="secondary">
+            <Link href={`/?reuseAssignmentId=${assignment.id}` as Route}>
+              <FilePlus2 className="size-4" />
+              복제
+            </Link>
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 export function TeacherActivityList({
   assignments,
   loadError = null,
@@ -356,11 +443,20 @@ export function TeacherActivityList({
           <section
             className={
               mode === "library"
-                ? "grid gap-5 lg:grid-cols-2"
+                ? "grid gap-4 md:grid-cols-2 xl:grid-cols-3"
                 : "grid gap-4"
             }
           >
             {assignments.map((assignment) => {
+              if (mode === "library") {
+                return (
+                  <LibraryAssignmentCard
+                    assignment={assignment}
+                    key={assignment.id}
+                  />
+                );
+              }
+
               const showShareCard =
                 mode !== "reports" && assignment.status === "active";
               const friendlyConcept = toFriendlyConcept(assignment.concept);
@@ -380,12 +476,6 @@ export function TeacherActivityList({
                 className="overflow-hidden rounded-[1.75rem] bg-[#fffdf8]"
                 key={assignment.id}
               >
-                {mode === "library" ? (
-                  <MaterialThumbnail
-                    assignment={assignment}
-                    title={friendlyTitle}
-                  />
-                ) : null}
                 <CardHeader className="space-y-4">
                   <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                     <div className="space-y-3">
@@ -407,26 +497,6 @@ export function TeacherActivityList({
                           만든 선생님{" "}
                           {assignment.creatorName ?? "수학프로 선생님"}
                         </p>
-                        {mode === "library" && assignment.teacherGuide ? (
-                          <p className="mt-3 rounded-2xl bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-950">
-                            <span className="mb-1 block text-xs font-semibold tracking-[0.14em] text-amber-700 uppercase">
-                              수업 활용
-                            </span>
-                            {assignment.teacherGuide}
-                          </p>
-                        ) : null}
-                        {mode === "library" && assignment.learningQuestions?.length ? (
-                          <div className="mt-3 grid gap-2 rounded-2xl bg-teal-50 px-4 py-3 text-sm leading-6 text-primary">
-                            <span className="text-xs font-semibold tracking-[0.14em] text-primary/70 uppercase">
-                              학습 질문
-                            </span>
-                            {assignment.learningQuestions
-                              .slice(0, 2)
-                              .map((question) => (
-                                <p key={question}>- {question}</p>
-                              ))}
-                          </div>
-                        ) : null}
                       </div>
                     </div>
                     <div className="grid gap-2 rounded-2xl bg-secondary/60 p-4 text-sm text-muted sm:grid-cols-3 lg:min-w-[360px]">
@@ -499,10 +569,7 @@ export function TeacherActivityList({
                           variant="default"
                         />
                       ) : null}
-                      <Button
-                        asChild
-                        variant={mode === "library" ? "default" : "secondary"}
-                      >
+                      <Button asChild variant="secondary">
                         <Link
                           href={`/teacher/activities/${assignment.id}` as Route}
                         >
@@ -510,9 +577,6 @@ export function TeacherActivityList({
                           자료 보기
                         </Link>
                       </Button>
-                      {mode === "library" ? (
-                        <StudentParticipationAction assignment={assignment} />
-                      ) : null}
                       {mode !== "reports" ? (
                         <Button asChild>
                           <Link
