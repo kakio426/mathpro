@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const gradeBandSchema = z.literal("3-4");
+export const gradeBandSchema = z.enum(["1-2", "3-4", "5-6"]);
 export type GradeBand = z.infer<typeof gradeBandSchema>;
 
 export const mathDomainSchema = z.literal("number-and-operations");
