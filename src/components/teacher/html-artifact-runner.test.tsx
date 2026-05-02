@@ -130,6 +130,8 @@ describe("HtmlArtifactRunner", () => {
     render(<HtmlArtifactRunner assignment={assignment} block={htmlBlock} />);
 
     const iframe = await screen.findByTitle("분수의 의미 활동 화면");
+    expect(screen.queryByText("오늘의 활동")).not.toBeInTheDocument();
+    expect(screen.getByText("활동 상태")).toBeInTheDocument();
     expect(screen.queryByText(/HTML|postMessage/)).not.toBeInTheDocument();
     dispatchArtifactMessage(iframe as HTMLIFrameElement, {
       eventType: "select",

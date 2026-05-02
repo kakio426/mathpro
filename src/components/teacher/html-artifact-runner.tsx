@@ -23,7 +23,6 @@ import { Separator } from "@/components/ui/separator";
 import {
   toFriendlyActivityTitle,
   toFriendlyHtmlArtifactSource,
-  toStudentActivityInstruction,
 } from "@/features/teacher/display";
 import type { JsonObject, JsonValue, TrackedSessionEventType } from "@/types/session";
 import type {
@@ -206,10 +205,6 @@ export function HtmlArtifactRunner({
     block.title,
     assignment.document.concept,
   );
-  const activityInstruction = toStudentActivityInstruction(
-    block.instruction,
-    assignment.document.concept,
-  );
   const artifactSource = toFriendlyHtmlArtifactSource(
     block.html ?? "",
     assignment.document.concept,
@@ -352,40 +347,11 @@ export function HtmlArtifactRunner({
   }
 
   return (
-    <section className="px-3 py-3 sm:px-4 sm:py-4">
-      <Container className="flex min-h-[calc(100svh-1.5rem)] max-w-[1600px] flex-col gap-3 px-0 md:h-[calc(100svh-2rem)] md:min-h-0">
-        <div className="shrink-0 rounded-[1.5rem] border border-border bg-[#12312e] p-3 text-white shadow-soft sm:p-4">
-          <div className="flex flex-col gap-2 lg:flex-row lg:items-end lg:justify-between">
-            <div className="min-w-0 space-y-1.5">
-              <div className="flex flex-wrap items-center gap-2">
-                <Badge className="border-white/20 bg-white/10 text-white">
-                  오늘의 활동
-                </Badge>
-                <Badge className="border-amber-200/40 bg-amber-300/15 text-amber-100">
-                  참여 코드 {assignment.code}
-                </Badge>
-              </div>
-              <div>
-                <h1 className="text-lg font-semibold tracking-tight sm:text-xl">
-                  {activityTitle}
-                </h1>
-                <p className="mt-1 max-w-4xl text-xs leading-5 text-teal-50/80 sm:text-sm">
-                  {activityInstruction}
-                </p>
-              </div>
-            </div>
-            <div className="shrink-0 rounded-2xl border border-white/15 bg-white/10 px-4 py-2 text-sm">
-              <p className="text-teal-100/70">현재 상태</p>
-              <p className="mt-1 font-semibold">
-                {artifactStateLabel(artifactState)}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <Card className="flex min-h-[760px] flex-none overflow-hidden rounded-[1.5rem] bg-[#fefbf5] md:min-h-0 md:flex-1">
-          <CardContent className="flex min-h-0 flex-1 flex-col gap-2 p-2 sm:p-3">
-            <div className="min-h-0 flex-1 overflow-hidden rounded-[1.25rem] border border-border bg-white shadow-soft">
+    <section className="h-svh px-2 py-2 sm:px-3 sm:py-3">
+      <Container className="flex h-full max-w-[1800px] flex-col px-0">
+        <Card className="flex min-h-0 flex-1 overflow-hidden rounded-[1.25rem] bg-[#fefbf5]">
+          <CardContent className="flex min-h-0 flex-1 flex-col gap-1.5 p-1.5 sm:gap-2 sm:p-2">
+            <div className="min-h-0 flex-1 overflow-hidden rounded-[1rem] border border-border bg-white shadow-soft">
               <iframe
                 ref={iframeRef}
                 title={`${activityTitle} 화면`}
@@ -397,9 +363,13 @@ export function HtmlArtifactRunner({
               />
             </div>
 
-            <details className="group shrink-0 rounded-[1rem] border border-border bg-white/70 p-2.5 text-sm leading-6 text-muted">
-              <summary className="flex cursor-pointer list-none items-center justify-between gap-3 font-semibold text-foreground">
-                <span>활동 진행 상태 보기</span>
+            <details className="group shrink-0 rounded-[0.875rem] border border-border bg-white/80 p-2 text-sm leading-6 text-muted">
+              <summary className="flex cursor-pointer list-none flex-wrap items-center justify-between gap-2 font-semibold text-foreground">
+                <span className="flex min-w-0 flex-wrap items-center gap-2">
+                  <span>활동 상태</span>
+                  <Badge variant="accent">참여 코드 {assignment.code}</Badge>
+                  <Badge>{artifactStateLabel(artifactState)}</Badge>
+                </span>
                 <span className="rounded-full bg-secondary px-3 py-1 text-xs text-muted">
                   기록 {eventLog.length}개
                 </span>

@@ -170,6 +170,18 @@ const embeddedMathproArtifactStyle = `
         min-height: 44px !important;
         font-size: 16px !important;
       }
+
+      .mp-app button {
+        white-space: nowrap !important;
+        overflow-wrap: normal !important;
+      }
+
+      .mp-app .pie strong {
+        width: 68% !important;
+        min-width: 3rem !important;
+        line-height: 1 !important;
+        white-space: nowrap !important;
+      }
     }
 
     @media screen and (max-width: 920px) {
