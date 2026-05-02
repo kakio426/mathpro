@@ -40,6 +40,7 @@ const baseAssignment: PublishedAssignmentListItem = {
   ],
   hasHtmlArtifact: true,
   previewBlockTitle: "길이 비교 실험",
+  previewHtml: "<!doctype html><html><body><h1>길이 비교 썸네일</h1></body></html>",
   blockCount: 1,
   participantCount: 8,
   completedCount: 6,
@@ -56,6 +57,7 @@ describe("PublicMaterialGallery", () => {
     ).toBeInTheDocument();
     expect(screen.getByText("길이 단위 감각 자료")).toBeInTheDocument();
     expect(screen.getByText(/만든 선생님 김수학 선생님/)).toBeInTheDocument();
+    expect(screen.getByTitle("길이 단위 감각 자료 썸네일")).toBeInTheDocument();
     expect(screen.getAllByText("미리보기 가능").length).toBeGreaterThan(0);
     expect(screen.getByText(/교실 물건과 학교 건물/)).toBeInTheDocument();
     expect(

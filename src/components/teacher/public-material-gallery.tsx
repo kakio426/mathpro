@@ -19,6 +19,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { MaterialThumbnail } from "@/components/teacher/material-thumbnail";
 import { toFriendlyMaterialTitle } from "@/features/teacher/display";
 import type { PublishedAssignmentListItem } from "@/types/teacher";
 
@@ -198,6 +199,7 @@ export function PublicMaterialGallery({
                 className="group overflow-hidden rounded-[2rem] bg-[#fffaf0] transition hover:-translate-y-1 hover:shadow-soft"
                 key={assignment.id}
               >
+                <MaterialThumbnail assignment={assignment} title={friendlyTitle} />
                 <CardHeader className="space-y-4">
                   <div className="flex flex-wrap items-center gap-2">
                     <Badge variant="accent">참여 코드 {assignment.code}</Badge>
