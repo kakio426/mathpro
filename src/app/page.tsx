@@ -56,7 +56,7 @@ async function loadRecentMaterials(): Promise<PublishedAssignmentListItem[]> {
     const teacherService = createAppTeacherService();
     const assignments = await teacherService.listPublishedAssignments();
 
-    return assignments.slice(0, 4);
+    return assignments.slice(0, 8);
   } catch {
     return [];
   }

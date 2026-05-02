@@ -3,13 +3,13 @@
 import Link from "next/link";
 import type { Route } from "next";
 import {
-  ArrowRight,
   BarChart3,
   Blocks,
   BookOpenText,
   CheckCircle2,
   Copy,
   Eye,
+  FilePlus2,
   MonitorPlay,
   QrCode,
   Send,
@@ -36,6 +36,7 @@ import {
 } from "@/features/teacher/ai-material";
 import {
   toFriendlyConcept,
+  toFriendlyHtmlArtifactSource,
   toFriendlyMaterialTitle,
 } from "@/features/teacher/display";
 import {
@@ -69,6 +70,8 @@ type TeacherWorkspaceProps = {
   reuseLoadError?: string | null;
   recentMaterials?: PublishedAssignmentListItem[];
 };
+
+type WorkspaceMode = "browse" | "create";
 
 export type TeacherWorkspaceStep =
   | "empty"
@@ -109,7 +112,34 @@ const navItems = [
   },
 ];
 
-const studioSteps = [
+const browseSteps = [
+  {
+    id: "01",
+    title: "자료 고르기",
+    shortTitle: "고르기",
+    description: "썸네일로 바로 쓸 자료를 살펴봅니다.",
+  },
+  {
+    id: "02",
+    title: "미리보기",
+    shortTitle: "보기",
+    description: "학생에게 보일 화면을 크게 확인합니다.",
+  },
+  {
+    id: "03",
+    title: "복제/수정",
+    shortTitle: "수정",
+    description: "내 수업에 맞게 바꿔 시작합니다.",
+  },
+  {
+    id: "04",
+    title: "발행",
+    shortTitle: "발행",
+    description: "참여 코드로 학생에게 공유합니다.",
+  },
+];
+
+const createSteps = [
   {
     id: "01",
     title: "주제 입력",
@@ -130,17 +160,19 @@ const studioSteps = [
   },
   {
     id: "04",
-    title: "화면 확인",
-    shortTitle: "확인",
-    description: "학생에게 보일 화면을 크게 확인합니다.",
-  },
-  {
-    id: "05",
-    title: "발행",
+    title: "확인/발행",
     shortTitle: "발행",
     description: "학생 화면을 확인하고 참여 코드로 공유합니다.",
   },
 ];
+
+type WorkspaceStepDefinition = (typeof browseSteps)[number];
+
+const difficultyLabels = {
+  easy: "기초",
+  standard: "표준",
+  challenge: "도전",
+} as const;
 
 const teacherWorkspaceTourSteps: GuidedTourStep[] = [
   {
@@ -346,21 +378,79 @@ function formatRecentMaterialDate(value: string) {
   }).format(new Date(value));
 }
 
-function RecentMaterialCards({
-  materials,
+function WorkspaceProgressStrip({
+  currentIndex,
+  label,
+  steps,
 }: {
-  materials: PublishedAssignmentListItem[];
+  currentIndex: number;
+  label: string;
+  steps: WorkspaceStepDefinition[];
 }) {
   return (
-    <section className="rounded-[1.75rem] border border-border bg-white/76 p-5 shadow-card">
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+    <nav
+      aria-label={label}
+      className="mb-5 rounded-[1.25rem] border border-border bg-white/78 p-3 shadow-card"
+    >
+      <ol className="grid gap-2 md:grid-cols-4">
+        {steps.map((step, index) => {
+          const isCurrent = index === currentIndex;
+          const isDone = index < currentIndex;
+
+          return (
+            <li
+              aria-current={isCurrent ? "step" : undefined}
+              className={`rounded-2xl border px-3 py-3 transition ${
+                isCurrent
+                  ? "border-primary/40 bg-primary text-primary-foreground shadow-card"
+                  : isDone
+                    ? "border-primary/15 bg-teal-50 text-primary"
+                    : "border-border bg-white/70 text-muted"
+              }`}
+              key={step.id}
+            >
+              <div className="flex items-center gap-2">
+                <span className="font-mono text-xs opacity-70">{step.id}</span>
+                <span className="font-semibold sm:hidden">
+                  {step.shortTitle}
+                </span>
+                <span className="hidden font-semibold sm:inline">
+                  {step.title}
+                </span>
+              </div>
+              <p className="mt-1 hidden text-xs leading-5 opacity-78 lg:block">
+                {step.description}
+              </p>
+            </li>
+          );
+        })}
+      </ol>
+    </nav>
+  );
+}
+
+function MaterialDiscoveryPanel({
+  materials,
+  onPreviewMaterial,
+  onStartCreate,
+  selectedMaterialId,
+}: {
+  materials: PublishedAssignmentListItem[];
+  onPreviewMaterial: (materialId: string) => void;
+  onStartCreate: () => void;
+  selectedMaterialId: string | null;
+}) {
+  return (
+    <section className="space-y-4" id="recent-materials">
+      <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <Badge variant="accent">최근 자료</Badge>
-          <h2 className="mt-2 text-xl font-semibold tracking-tight text-foreground">
+          <Badge variant="accent">자료 탐색</Badge>
+          <h2 className="mt-2 text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
             최근 만들어진 교육자료
           </h2>
-          <p className="mt-2 text-sm leading-6 text-muted">
-            다른 자료를 참고하거나 복제해서 새 수업자료의 출발점으로 쓸 수 있습니다.
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">
+            먼저 실제 자료를 열어 보고, 마음에 드는 흐름을 복제해서 내 수업에
+            맞게 바꿔 보세요.
           </p>
         </div>
         <Button asChild size="sm" variant="secondary">
@@ -369,15 +459,21 @@ function RecentMaterialCards({
       </div>
 
       {materials.length > 0 ? (
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid gap-4 md:grid-cols-2">
           {materials.map((material) => {
             const title = toFriendlyMaterialTitle(
               material.title,
               material.concept,
             );
+            const isSelected = material.id === selectedMaterialId;
+
             return (
               <article
-                className="overflow-hidden rounded-2xl border border-border bg-[#fffdf8]"
+                className={`overflow-hidden rounded-2xl border bg-[#fffdf8] transition ${
+                  isSelected
+                    ? "border-primary/45 shadow-soft"
+                    : "border-border shadow-card hover:-translate-y-0.5 hover:shadow-soft"
+                }`}
                 key={material.id}
               >
                 <MaterialThumbnail
@@ -386,19 +482,42 @@ function RecentMaterialCards({
                   title={title}
                   thumbnailTitle={`${title} 최근 자료 썸네일`}
                 />
-                <div className="space-y-3 p-4">
+                <div className="space-y-4 p-4">
                   <div>
-                    <h3 className="line-clamp-2 text-base font-semibold leading-6 text-foreground">
+                    <h3 className="line-clamp-2 text-lg font-semibold leading-7 text-foreground">
                       {title}
                     </h3>
-                    <p className="mt-1 text-sm text-muted">
+                    <p className="mt-1 text-sm leading-6 text-muted">
                       {toFriendlyConcept(material.concept)}
                     </p>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 text-xs font-semibold text-muted sm:grid-cols-4">
+                    <span className="rounded-xl bg-secondary/60 px-3 py-2">
+                      {material.gradeBand}학년군
+                    </span>
+                    <span className="rounded-xl bg-secondary/60 px-3 py-2">
+                      {difficultyLabels[material.difficulty]}
+                    </span>
+                    <span className="rounded-xl bg-secondary/60 px-3 py-2">
+                      참여 {material.participantCount}
+                    </span>
+                    <span className="rounded-xl bg-secondary/60 px-3 py-2">
+                      완료 {material.completedCount}
+                    </span>
                   </div>
                   <p className="text-xs font-semibold text-muted">
                     최근 발행 {formatRecentMaterialDate(material.publishedAt)}
                   </p>
-                  <div className="flex flex-wrap gap-2">
+                  <div className="grid gap-2 sm:grid-cols-3">
+                    <Button
+                      size="sm"
+                      type="button"
+                      variant={isSelected ? "default" : "secondary"}
+                      onClick={() => onPreviewMaterial(material.id)}
+                    >
+                      <Eye className="size-4" />
+                      빠른 미리보기
+                    </Button>
                     <Button asChild size="sm" variant="secondary">
                       <Link href={`/teacher/activities/${material.id}` as Route}>
                         자료 보기
@@ -406,6 +525,7 @@ function RecentMaterialCards({
                     </Button>
                     <Button asChild size="sm">
                       <Link href={`/?reuseAssignmentId=${material.id}` as Route}>
+                        <FilePlus2 className="size-4" />
                         복제해서 시작
                       </Link>
                     </Button>
@@ -416,10 +536,116 @@ function RecentMaterialCards({
           })}
         </div>
       ) : (
-        <div className="rounded-2xl border border-dashed border-border bg-white/65 p-5 text-sm leading-6 text-muted">
-          아직 최근 자료가 없습니다. 첫 자료를 발행하면 이곳에 썸네일로 나타납니다.
+        <div className="rounded-[1.75rem] border border-dashed border-border bg-white/76 p-6 shadow-card">
+          <div className="max-w-2xl space-y-3">
+            <Badge variant="accent">첫 자료</Badge>
+            <h3 className="text-2xl font-semibold tracking-tight text-foreground">
+              아직 둘러볼 자료가 없습니다
+            </h3>
+            <p className="text-sm leading-7 text-muted">
+              첫 자료를 만들고 발행하면 이곳에 썸네일로 쌓입니다. 지금은 바로
+              새 자료 제작으로 시작하세요.
+            </p>
+            <Button type="button" onClick={onStartCreate}>
+              <Wand2 className="size-4" />
+              첫 자료 만들기
+            </Button>
+          </div>
         </div>
       )}
+    </section>
+  );
+}
+
+function SelectedMaterialPreview({
+  material,
+}: {
+  material: PublishedAssignmentListItem | null;
+}) {
+  if (!material) {
+    return null;
+  }
+
+  const title = toFriendlyMaterialTitle(material.title, material.concept);
+  const previewSource = material.previewHtml
+    ? toFriendlyHtmlArtifactSource(material.previewHtml, material.concept)
+    : "";
+
+  return (
+    <section className="rounded-[1.75rem] border border-border bg-panel p-5 shadow-card">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <Badge variant="accent">선택 자료 미리보기</Badge>
+          <h2 className="mt-2 text-xl font-semibold tracking-tight">
+            {title}
+          </h2>
+        </div>
+        <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-800">
+          {material.status === "active" ? "바로 참여 가능" : "참여 종료"}
+        </span>
+      </div>
+      <div className="overflow-hidden rounded-[1.25rem] border border-border bg-white shadow-soft">
+        {previewSource ? (
+          <iframe
+            allow=""
+            className="h-[min(54vh,520px)] min-h-[360px] w-full bg-white"
+            loading="lazy"
+            referrerPolicy="no-referrer"
+            sandbox="allow-scripts"
+            srcDoc={previewSource}
+            title={`${title} 선택 자료 미리보기`}
+          />
+        ) : (
+          <div className="grid min-h-[360px] place-items-center bg-white/80 p-7 text-center">
+            <div className="space-y-3">
+              <MonitorPlay className="mx-auto size-10 text-primary" />
+              <p className="font-semibold text-foreground">
+                미리보기 준비 중
+              </p>
+              <p className="text-sm leading-6 text-muted">
+                자료 상세 화면에서 블록과 안내를 확인할 수 있습니다.
+              </p>
+            </div>
+          </div>
+        )}
+      </div>
+      <div className="mt-4 grid gap-2 sm:grid-cols-2">
+        <Button asChild>
+          <Link href={`/?reuseAssignmentId=${material.id}` as Route}>
+            <FilePlus2 className="size-4" />
+            복제해서 시작
+          </Link>
+        </Button>
+        <Button asChild variant="secondary">
+          <Link href={`/teacher/activities/${material.id}` as Route}>
+            <Eye className="size-4" />
+            자료 보기
+          </Link>
+        </Button>
+      </div>
+    </section>
+  );
+}
+
+function CompactCreateCard({
+  onStartCreate,
+}: {
+  onStartCreate: () => void;
+}) {
+  return (
+    <section className="rounded-[1.75rem] border border-primary/20 bg-teal-50/80 p-5 shadow-card">
+      <Badge variant="accent">직접 제작</Badge>
+      <h2 className="mt-2 text-xl font-semibold tracking-tight">
+        원하는 자료가 없다면 주제부터 시작하세요
+      </h2>
+      <p className="mt-2 text-sm leading-6 text-muted">
+        새로 만들기는 보조 흐름으로 접어 두었습니다. 버튼을 누르면 주제 입력,
+        요청문 복사, 결과 붙여넣기, 확인/발행 단계가 열립니다.
+      </p>
+      <Button className="mt-4 w-full" type="button" onClick={onStartCreate}>
+        <Wand2 className="size-4" />
+        직접 새로 만들기
+      </Button>
     </section>
   );
 }
@@ -459,6 +685,12 @@ export function TeacherWorkspace({
   const [topic, setTopic] = useState(() =>
     createInitialTopic(reuseSource, initialForm),
   );
+  const [workspaceMode, setWorkspaceMode] = useState<WorkspaceMode>(
+    reuseSource ? "create" : "browse",
+  );
+  const [selectedMaterialId, setSelectedMaterialId] = useState<string | null>(
+    recentMaterials[0]?.id ?? null,
+  );
   const [document, setDocument] = useState<TeacherActivityDocument | null>(null);
   const [assignment, setAssignment] = useState<PublishedAssignment | null>(null);
   const [status, setStatus] = useState<"idle" | "drafting" | "publishing">(
@@ -473,6 +705,10 @@ export function TeacherWorkspace({
   const hasTopic = topic.trim().length > 0;
   const hasPastedResult = Boolean(form.html?.trim());
   const learningQuestions = form.learningQuestions?.slice(0, 3) ?? [];
+  const selectedMaterial =
+    recentMaterials.find((material) => material.id === selectedMaterialId) ??
+    recentMaterials[0] ??
+    null;
   const documentHasBlockedHtml = Boolean(
     document?.blocks.some((block) => block.safetyStatus === "blocked"),
   );
@@ -487,6 +723,19 @@ export function TeacherWorkspace({
           : promptReady
             ? "prompt-ready"
             : "empty";
+  const createStepIndex =
+    workspaceStep === "empty"
+      ? 0
+      : workspaceStep === "prompt-ready"
+        ? 1
+        : workspaceStep === "import-open"
+          ? 2
+          : 3;
+  const browseStepIndex = selectedMaterial ? 1 : 0;
+
+  function handleStartCreate() {
+    setWorkspaceMode("create");
+  }
 
   function handleCreatorNameChange(value: string) {
     const creatorName = normalizeCreatorName(value);
@@ -509,6 +758,7 @@ export function TeacherWorkspace({
   }
 
   function handleTopicChange(value: string) {
+    setWorkspaceMode("create");
     setTopic(value);
     setPromptReady(false);
     setDocument(null);
@@ -528,6 +778,7 @@ export function TeacherWorkspace({
   function handlePreparePrompt() {
     const nextForm = topicToDraftForm(topic, form);
 
+    setWorkspaceMode("create");
     setForm({
       ...nextForm,
       promptTemplate: buildPromptForForm(nextForm),
@@ -620,6 +871,7 @@ export function TeacherWorkspace({
   function handleImportedResultChange(value: string) {
     const parsed = parseAiMaterialOutput(value);
 
+    setWorkspaceMode("create");
     setForm((current) => ({
       ...current,
       html: parsed.html ?? "",
@@ -671,60 +923,37 @@ export function TeacherWorkspace({
         className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_12%_10%,rgba(15,118,110,0.18),transparent_28%),radial-gradient(circle_at_88%_0%,rgba(245,158,11,0.18),transparent_24%)]"
       />
       <div className="mx-auto w-full max-w-[1480px] px-4 py-5 sm:px-6 lg:px-8">
-        <section className="mb-4 overflow-hidden rounded-[1.5rem] border border-white/10 bg-[#12312e] px-4 py-4 text-white shadow-card sm:px-5 sm:py-5 lg:px-6">
-          <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(640px,0.9fr)] xl:items-center">
-            <div className="space-y-3">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <div className="flex flex-wrap items-center gap-2">
-                  <Badge className="border-white/20 bg-white/10 text-white">
-                    AI 수업자료 메이커
-                  </Badge>
-                  <Badge className="border-amber-200/40 bg-amber-300/15 text-amber-100">
-                    주제만 넣고 시작
-                  </Badge>
-                </div>
-                <GuidedTour
-                  autoOpen
-                  className="h-9 border-white/20 bg-white/10 px-3 text-xs text-white shadow-none hover:bg-white/20"
-                  startLabel="처음 안내"
-                  steps={teacherWorkspaceTourSteps}
-                  storageKey="mathpro:tour:teacher-workspace"
-                />
+        <section className="mb-3 overflow-hidden rounded-[1.25rem] border border-white/10 bg-[#12312e] px-4 py-3 text-white shadow-card sm:px-5 lg:px-6">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+            <div className="max-w-4xl space-y-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge className="border-white/20 bg-white/10 text-white">
+                  자료실 중심 제작실
+                </Badge>
+                <Badge className="border-amber-200/40 bg-amber-300/15 text-amber-100">
+                  보고 복제하고 바꾸기
+                </Badge>
               </div>
               <div>
                 <p className="text-xs font-semibold tracking-[0.14em] text-teal-100 uppercase">
                   수학프로 제작실
                 </p>
-                <h1 className="mt-1 max-w-3xl text-balance text-2xl font-semibold tracking-tight [word-break:keep-all] sm:text-4xl">
-                  어떤 수업자료를 만들까요?
+                <h1 className="mt-0.5 text-balance text-xl font-semibold tracking-tight [word-break:keep-all] sm:text-3xl">
+                  자료를 고르고, 내 수업에 맞게 바꾸세요
                 </h1>
-                <p className="mt-2 max-w-xl text-sm leading-6 text-teal-50/78">
-                  주제 한 줄이면 AI 요청문, 학생 화면 확인, 배포까지 이어집니다.
+                <p className="mt-1 max-w-3xl text-xs leading-5 text-teal-50/78 sm:text-sm">
+                  이미 만들어진 교육자료를 먼저 살펴보고, 마음에 드는 흐름을
+                  복제해 우리 반 수업 장면에 맞게 다듬습니다.
                 </p>
               </div>
             </div>
-            <ol
-              aria-label="자료 제작 흐름"
-              className="-mx-1 flex flex-nowrap items-center gap-1.5 overflow-x-auto px-1 pb-1 text-[0.7rem] sm:gap-2 sm:text-xs xl:justify-end xl:overflow-visible"
-            >
-              {studioSteps.map((step, index) => (
-                <li className="flex shrink-0 items-center gap-2" key={step.id}>
-                  <span className="inline-flex h-8 items-center gap-1.5 rounded-full border border-white/15 bg-white/10 px-2 font-semibold text-white/92 sm:h-9 sm:gap-2 sm:px-3">
-                    <span className="font-mono text-[0.68rem] text-teal-100/70">
-                      {step.id}
-                    </span>
-                    <span className="sm:hidden">{step.shortTitle}</span>
-                    <span className="hidden sm:inline">{step.title}</span>
-                  </span>
-                  {index < studioSteps.length - 1 ? (
-                    <ArrowRight
-                      aria-hidden="true"
-                      className="hidden size-3.5 text-white/35 xl:block"
-                    />
-                  ) : null}
-                </li>
-              ))}
-            </ol>
+            <GuidedTour
+              autoOpen
+              className="h-8 w-fit border-white/20 bg-white/10 px-3 text-xs text-white shadow-none hover:bg-white/20"
+              startLabel="처음 안내"
+              steps={teacherWorkspaceTourSteps}
+              storageKey="mathpro:tour:teacher-workspace"
+            />
           </div>
         </section>
 
@@ -751,6 +980,18 @@ export function TeacherWorkspace({
             );
           })}
         </nav>
+
+        <WorkspaceProgressStrip
+          currentIndex={
+            workspaceMode === "browse" ? browseStepIndex : createStepIndex
+          }
+          label={
+            workspaceMode === "browse"
+              ? "자료 탐색 진행 단계"
+              : "자료 제작 진행 단계"
+          }
+          steps={workspaceMode === "browse" ? browseSteps : createSteps}
+        />
 
         {reuseSource ? (
           <section className="mb-5 rounded-[1.5rem] border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm leading-6 text-emerald-900 shadow-card">
@@ -781,6 +1022,22 @@ export function TeacherWorkspace({
           </section>
         ) : null}
 
+        {workspaceMode === "browse" ? (
+          <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(380px,430px)]">
+            <MaterialDiscoveryPanel
+              materials={recentMaterials}
+              selectedMaterialId={selectedMaterial?.id ?? null}
+              onPreviewMaterial={setSelectedMaterialId}
+              onStartCreate={handleStartCreate}
+            />
+            <aside className="space-y-5 xl:sticky xl:top-5 xl:self-start">
+              <SelectedMaterialPreview
+                material={selectedMaterial}
+              />
+              <CompactCreateCard onStartCreate={handleStartCreate} />
+            </aside>
+          </div>
+        ) : (
         <form
           className="grid gap-5 xl:grid-cols-[minmax(380px,0.75fr)_minmax(720px,1.25fr)]"
           onSubmit={handleCreateDraft}
@@ -815,7 +1072,7 @@ export function TeacherWorkspace({
 
               <div className="mt-5 grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
                 <p className="text-sm leading-6 text-muted">
-                  입력 후 바로 요청문을 만들거나, 최근 자료를 참고할 수 있습니다.
+                  입력 후 바로 요청문을 만들거나, 다시 자료를 둘러볼 수 있습니다.
                 </p>
                 <div className="flex flex-col gap-2 sm:flex-row">
                   <Button
@@ -828,12 +1085,12 @@ export function TeacherWorkspace({
                     AI 요청문 만들기
                   </Button>
                   <Button
-                    asChild
                     className="h-14 rounded-2xl px-6 text-base"
                     type="button"
                     variant="secondary"
+                    onClick={() => setWorkspaceMode("browse")}
                   >
-                    <a href="#recent-materials">최근 자료 보기</a>
+                    자료 탐색으로 돌아가기
                   </Button>
                 </div>
               </div>
@@ -1052,7 +1309,7 @@ export function TeacherWorkspace({
 
           </section>
 
-          <aside className="space-y-5" id="recent-materials">
+          <aside className="space-y-5" id="student-preview">
             <section className="rounded-[1.75rem] border border-border bg-panel p-5 shadow-card">
               <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
                 <div>
@@ -1093,8 +1350,6 @@ export function TeacherWorkspace({
               </div>
             </section>
 
-            <RecentMaterialCards materials={recentMaterials} />
-
             {hasPastedResult && (form.teacherGuide || learningQuestions.length) ? (
               <section className="rounded-[1.75rem] border border-amber-200 bg-[#fff8e7] p-5 shadow-card">
                 <Badge variant="accent">교사용 메모</Badge>
@@ -1131,7 +1386,7 @@ export function TeacherWorkspace({
             <section className="rounded-[1.75rem] border border-border bg-panel p-5 shadow-card">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <Badge variant="accent">5단계</Badge>
+                  <Badge variant="accent">확인/발행</Badge>
                   <h2 className="mt-2 text-xl font-semibold tracking-tight">
                     참여 코드 만들기
                   </h2>
@@ -1299,6 +1554,7 @@ export function TeacherWorkspace({
             ) : null}
           </aside>
         </form>
+        )}
       </div>
       <AiResultImportDialog
         open={isImportOpen}

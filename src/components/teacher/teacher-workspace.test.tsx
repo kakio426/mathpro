@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { TeacherWorkspaceReuseSource } from "./teacher-workspace";
@@ -67,6 +67,20 @@ const recentMaterial: PublishedAssignmentListItem = {
   completedCount: 2,
 };
 
+const secondRecentMaterial: PublishedAssignmentListItem = {
+  ...recentMaterial,
+  id: "assignment-recent-2",
+  activityId: "activity-recent-2",
+  code: "RECEN2",
+  title: "길이 비교 자료",
+  concept: "길이 단위",
+  previewHtml: "<!doctype html><html><body><h1>길이 비교</h1></body></html>",
+};
+
+async function openCreateWorkspace(user: ReturnType<typeof userEvent.setup>) {
+  await user.click(screen.getByRole("button", { name: "직접 새로 만들기" }));
+}
+
 describe("TeacherWorkspace", () => {
   beforeEach(() => {
     window.localStorage.setItem("mathpro:tour:teacher-workspace", "seen");
@@ -115,6 +129,16 @@ describe("TeacherWorkspace", () => {
     render(<TeacherWorkspace />);
 
     expect(
+      screen.getByRole("heading", {
+        name: "자료를 고르고, 내 수업에 맞게 바꾸세요",
+      }),
+    ).toBeInTheDocument();
+    expect(screen.getByText("최근 만들어진 교육자료")).toBeInTheDocument();
+    expect(screen.queryByLabelText("AI가 만든 자료")).not.toBeInTheDocument();
+
+    await openCreateWorkspace(user);
+
+    expect(
       screen.getByText("학생 화면은 자료를 가져오면 바로 나타납니다."),
     ).toBeInTheDocument();
     expect(screen.getByText("태블릿/컴퓨터 기준")).toBeInTheDocument();
@@ -143,6 +167,7 @@ describe("TeacherWorkspace", () => {
     const user = userEvent.setup();
 
     render(<TeacherWorkspace />);
+    await openCreateWorkspace(user);
 
     expect(
       screen.queryByRole("button", { name: "요청문 복사하기" }),
@@ -179,6 +204,7 @@ describe("TeacherWorkspace", () => {
     const user = userEvent.setup();
 
     render(<TeacherWorkspace />);
+    await openCreateWorkspace(user);
 
     expect(screen.queryByText("선생님 용어 도움말")).not.toBeInTheDocument();
 
@@ -202,6 +228,7 @@ describe("TeacherWorkspace", () => {
     const user = userEvent.setup();
 
     render(<TeacherWorkspace />);
+    await openCreateWorkspace(user);
 
     await user.type(
       screen.getByLabelText("만들고 싶은 자료"),
@@ -243,6 +270,7 @@ describe("TeacherWorkspace", () => {
     const user = userEvent.setup();
 
     render(<TeacherWorkspace />);
+    await openCreateWorkspace(user);
 
     await user.type(
       screen.getByLabelText("만들고 싶은 자료"),
@@ -264,25 +292,56 @@ describe("TeacherWorkspace", () => {
     expect(screen.getByLabelText("AI가 만든 자료")).toBeVisible();
   });
 
-  it("shows recent published materials as thumbnail cards instead of fixed samples", () => {
-    render(<TeacherWorkspace recentMaterials={[recentMaterial]} />);
+  it("shows recent published materials as thumbnail cards instead of fixed samples", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <TeacherWorkspace
+        recentMaterials={[recentMaterial, secondRecentMaterial]}
+      />,
+    );
 
     expect(screen.queryByText("샘플로 먼저 보기")).not.toBeInTheDocument();
     expect(screen.getByText("최근 만들어진 교육자료")).toBeInTheDocument();
+    const progress = screen.getByRole("navigation", {
+      name: "자료 탐색 진행 단계",
+    });
+    expect(within(progress).getAllByRole("listitem")).toHaveLength(4);
+    expect(within(progress).getByText("미리보기").closest("li")).toHaveAttribute(
+      "aria-current",
+      "step",
+    );
     expect(
       screen.getByTitle("분수 막대 조작 자료 최근 자료 썸네일"),
     ).toBeInTheDocument();
     expect(
+      screen.getByTitle("분수 막대 조작 자료 선택 자료 미리보기"),
+    ).toBeInTheDocument();
+    await user.click(screen.getAllByRole("button", { name: "빠른 미리보기" })[1]);
+    expect(
+      screen.getByTitle("길이 비교 자료 선택 자료 미리보기"),
+    ).toBeInTheDocument();
+    expect(
       screen.getByRole("link", { name: "분수 막대 조작 자료 열기" }),
     ).toHaveAttribute("href", "/teacher/activities/assignment-recent-1");
-    expect(screen.getByRole("link", { name: "자료 보기" })).toHaveAttribute(
-      "href",
-      "/teacher/activities/assignment-recent-1",
-    );
-    expect(screen.getByRole("link", { name: "복제해서 시작" })).toHaveAttribute(
-      "href",
-      "/?reuseAssignmentId=assignment-recent-1",
-    );
+    expect(
+      screen
+        .getAllByRole("link", { name: "자료 보기" })
+        .some(
+          (link) =>
+            link.getAttribute("href") ===
+            "/teacher/activities/assignment-recent-1",
+        ),
+    ).toBe(true);
+    expect(
+      screen
+        .getAllByRole("link", { name: "복제해서 시작" })
+        .some(
+          (link) =>
+            link.getAttribute("href") ===
+            "/?reuseAssignmentId=assignment-recent-1",
+        ),
+    ).toBe(true);
   });
 
   it("shows saved-material actions after publishing", async () => {
@@ -360,6 +419,7 @@ describe("TeacherWorkspace", () => {
     vi.stubGlobal("fetch", fetchMock);
 
     render(<TeacherWorkspace />);
+    await openCreateWorkspace(user);
 
     await user.type(
       screen.getByLabelText("만들고 싶은 자료"),
