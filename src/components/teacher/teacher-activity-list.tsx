@@ -260,7 +260,11 @@ function LibraryAssignmentCard({
 
   return (
     <Card className="flex h-full flex-col overflow-hidden rounded-[1.5rem] bg-[#fffdf8]">
-      <MaterialThumbnail assignment={assignment} title={friendlyTitle} />
+      <MaterialThumbnail
+        assignment={assignment}
+        href={`/teacher/activities/${assignment.id}` as Route}
+        title={friendlyTitle}
+      />
       <CardHeader className="space-y-3 p-5 pb-3">
         <div className="flex flex-wrap items-center gap-2">
           <Badge>{statusLabel(assignment.status)}</Badge>

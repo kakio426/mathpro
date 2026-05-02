@@ -58,6 +58,9 @@ describe("TeacherActivityList", () => {
     expect(screen.getByText("완료 3")).toBeInTheDocument();
     expect(screen.getByText("분수 막대 미리보기")).toBeInTheDocument();
     expect(screen.getByTitle("분수 막대 조작 자료 썸네일")).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: "분수 막대 조작 자료 열기" }),
+    ).toHaveAttribute("href", "/teacher/activities/assignment-123");
     expect(screen.getByRole("link", { name: /자료 보기/ })).toHaveAttribute(
       "href",
       "/teacher/activities/assignment-123",

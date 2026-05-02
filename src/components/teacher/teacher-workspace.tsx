@@ -25,6 +25,7 @@ import {
 } from "@/components/onboarding/guided-tour";
 import { AiResultImportDialog } from "@/components/teacher/ai-result-import-dialog";
 import { AssignmentShareCard } from "@/components/teacher/assignment-share-card";
+import { MaterialThumbnail } from "@/components/teacher/material-thumbnail";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -35,7 +36,6 @@ import {
 } from "@/features/teacher/ai-material";
 import {
   toFriendlyConcept,
-  toFriendlyHtmlArtifactSource,
   toFriendlyMaterialTitle,
 } from "@/features/teacher/display";
 import {
@@ -375,37 +375,17 @@ function RecentMaterialCards({
               material.title,
               material.concept,
             );
-            const previewSource = material.previewHtml
-              ? toFriendlyHtmlArtifactSource(
-                  material.previewHtml,
-                  material.concept,
-                )
-              : "";
-
             return (
               <article
                 className="overflow-hidden rounded-2xl border border-border bg-[#fffdf8]"
                 key={material.id}
               >
-                <div className="bg-slate-950 p-2">
-                  <div className="relative aspect-[16/10] overflow-hidden rounded-xl bg-white">
-                    {previewSource ? (
-                      <iframe
-                        allow=""
-                        className="pointer-events-none h-[200%] w-[200%] origin-top-left scale-50 border-0 bg-white"
-                        loading="lazy"
-                        referrerPolicy="no-referrer"
-                        sandbox="allow-scripts"
-                        srcDoc={previewSource}
-                        title={`${title} 최근 자료 썸네일`}
-                      />
-                    ) : (
-                      <div className="grid h-full place-items-center bg-secondary/70 p-4 text-center text-sm font-semibold text-muted">
-                        미리보기 준비 중
-                      </div>
-                    )}
-                  </div>
-                </div>
+                <MaterialThumbnail
+                  assignment={material}
+                  href={`/teacher/activities/${material.id}` as Route}
+                  title={title}
+                  thumbnailTitle={`${title} 최근 자료 썸네일`}
+                />
                 <div className="space-y-3 p-4">
                   <div>
                     <h3 className="line-clamp-2 text-base font-semibold leading-6 text-foreground">

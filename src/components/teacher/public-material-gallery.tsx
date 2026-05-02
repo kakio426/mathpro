@@ -199,7 +199,11 @@ export function PublicMaterialGallery({
                 className="group overflow-hidden rounded-[2rem] bg-[#fffaf0] transition hover:-translate-y-1 hover:shadow-soft"
                 key={assignment.id}
               >
-                <MaterialThumbnail assignment={assignment} title={friendlyTitle} />
+                <MaterialThumbnail
+                  assignment={assignment}
+                  href={`/teacher/activities/${assignment.id}` as Route}
+                  title={friendlyTitle}
+                />
                 <CardHeader className="space-y-4">
                   <div className="flex flex-wrap items-center gap-2">
                     <Badge variant="accent">참여 코드 {assignment.code}</Badge>
